@@ -1,0 +1,21 @@
+.lead-tracker {
+    fill: rgb(190, 95, 95);
+  }
+
+.checkbox-label{
+    display: inline-block;
+    width: 110px;
+    margin-right: 5px;
+    margin-left: 10px;
+    font-size: 14px;
+}
+
+.tooltip{
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+  font-size: 12px;
+  display: none;
+}
