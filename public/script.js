@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const selectElement = document.getElementById('yearSelect');
+    const selectYear = document.getElementById('yearSelect');
     for (let year = 2000; year <= 2022; year++) {
         const option = document.createElement('option');
         option.value = year;
         option.textContent = year;
-        selectElement.appendChild(option);
+        selectYear.appendChild(option);
     }
 
-    selectElement.addEventListener('change', async function () {
+    selectYear.addEventListener('change', async function () {
         const selectedYear = this.value;
         if (selectedYear) {
             try {
@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const gameSelectLoadMessage = document.getElementById('gameSelectLoadMessage');
                 gameSelectLoadMessage.style.display = 'block'; // Show loading message
+
+                // Hide the game select dropdown
+                document.getElementById('gameSelectContainer').style.display = 'none';
 
                 const response = await fetch(`/fetch-nba-data/${selectedYear}`);
                 const gamesData = await response.json();
