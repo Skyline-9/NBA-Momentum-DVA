@@ -4,7 +4,6 @@ const axios = require('axios');
 const tar = require('tar-fs');
 const lzma = require('lzma-native');
 const csv = require('csv-parser');
-const util = require('util');
 const path = require('path');
 const app = express();
 const port = 3000;
@@ -26,6 +25,18 @@ app.get('/fetch-nba-data/:year', async (req, res) => {
     const year = req.params.year;
     console.log(`Chosen year is ${year}`);
     try {
+        // Check if the data is already downloaded
+        const checkPath = `./public/data/nbastats_${year}/nbastats_${year}.csv`;
+        if(fs.existsSync(checkPath)) {
+            console.log("File already exists, reading directly...")
+
+            const gamesData = await readCsvFile(checkPath);
+            res.json(gamesData); // Send the data back to the client
+            return;
+        }
+
+        console.log("File does not exist, fetching...");
+
         const csvPaths = await getNBAData([year], 'nbastats', 'rg', true);
         const gamesData = await readCsvFile(csvPaths[0]);
         res.json(gamesData); // Send the data back to the client
