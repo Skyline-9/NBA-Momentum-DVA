@@ -1,3 +1,7 @@
+### PROJECT SPECIFIC ###
+# Ignore downloaded NBA data
+public/data
+
 ### macOS ###
 # General
 .DS_Store

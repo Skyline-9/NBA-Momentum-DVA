@@ -109,7 +109,7 @@ async function getNBAData(seasons, data, seasontype = 'rg', untar = true) {
             fs.writeFileSync(fileName, fileData);
 
             if (untar) {
-                const extractionPath = `./public/${name}`;
+                const extractionPath = `./public/data/${name}`;
                 fs.mkdirSync(extractionPath, {recursive: true});
 
                 const decompressor = lzma.createDecompressor();

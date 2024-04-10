@@ -77,7 +77,7 @@
 
 
         // find a way to pass the year and game id
-        const year = '2015' 
+        const year = '2015'
         const gid = '21500001'
 
         d3.csv("nba_stats/nbastats_" + year +".csv").then(data =>{
@@ -99,7 +99,7 @@
                 .filter(function(d) { return d.PLAYER1_TEAM_NICKNAME !== "";})
                 .map(function(d) {return d.PLAYER1_TEAM_NICKNAME})))
 
-            
+
             // sanity check to order all events
             game_data.sort(function(a, b){
                 return a.eventnum - b.eventnum
@@ -200,7 +200,7 @@
                     .data(periods)
                     .text(d => d.label)
                     .attr("text-anchor", "start");
-                
+
                 g.selectAll(".tick:last-of-type text")
                     .attr("text-anchor", "end")
                     .text("FINAL")
@@ -239,7 +239,7 @@
                 .attr("class", "y-axis")
                 .call(yAxis)
 
-            
+
             // tooltip
             var tooltip = d3.select("body").append("div")
                 .attr("class", "tooltip")
@@ -291,7 +291,7 @@
                 .property("value", d => d.type)
                 .on("change", checkboxChange);
 
-                
+
             function checkboxChange(){
                 selectedEventTypes = eventypes.filter(function(d, i) {
                     return toggles.nodes()[i].checked;
@@ -300,7 +300,7 @@
                 })
 
                 const event_data = game_data.filter(d => selectedEventTypes.includes(d.etype))
-                
+
                 circles = svg.selectAll("circle")
                     .data(event_data)
 
@@ -322,7 +322,7 @@
                     .on("mouseout", mouseOut)
 
             };
-            
+
         })
 
     </script>

@@ -12,6 +12,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (selectedYear) {
             try {
                 console.log("getting info");
+
+                const gameSelectLoadMessage = document.getElementById('gameSelectLoadMessage');
+                gameSelectLoadMessage.style.display = 'block'; // Show loading message
+
                 const response = await fetch(`/fetch-nba-data/${selectedYear}`);
                 const gamesData = await response.json();
                 displayGames(gamesData, selectedYear); // Call to function that handles display
@@ -24,6 +28,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Function to display games data
 function displayGames(gamesData, year) {
+    const gameSelectContainer = document.getElementById('gameSelectContainer');
+    gameSelectContainer.style.display = 'block'; // Show the game select dropdown
+
     const gameSelect = document.getElementById('gameSelect');
     gameSelect.innerHTML = '<option value="">--Please choose a game--</option>'; // Reset dropdown
 
@@ -33,6 +40,9 @@ function displayGames(gamesData, year) {
         option.textContent = `${game[0]}: ${game[1]} vs ${game[2]}`; // Format: gameID: TEAM_1 vs TEAM_2
         gameSelect.appendChild(option);
     });
+
+    const gameSelectLoadMessage = document.getElementById('gameSelectLoadMessage');
+    gameSelectLoadMessage.style.display = 'none'; // Hide loading message
 
     gameSelect.onchange = function () {
         const selectedGameID = this.value;
@@ -52,7 +62,7 @@ function plotGameData(gid, year) {
 
 
 
-    d3.csv(`nbastats_${year}/nbastats_${year}.csv`).then(data => {
+    d3.csv(`data/nbastats_${year}/nbastats_${year}.csv`).then(data => {
         const margin = ({ top: 30, right: 30, bottom: 30, left: 40 })
         const height = 750
         const width = 1500

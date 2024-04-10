@@ -7,24 +7,27 @@
     <title>Select a Year</title>
 </head>
 <body>
-    <script type="text/javascript" src="lib/d3.v5.min.js"></script>
+<!--    <script type="text/javascript" src="lib/d3.v5.min.js"></script>-->
+    <script type="text/javascript" src="lib/d3.v7.min.js"></script>
     <h1>NBA GAME ANALYSIS</h1>
     <select id="yearSelect">
         <option value="">--Please choose a year--</option>
         <!-- JavaScript will populate year options here -->
     </select>
 
-    <div id="gameSelectContainer">
+    <p id="gameSelectLoadMessage" style="display: none">Loading</p>
+
+    <div id="gameSelectContainer" style="display: none">
         <label for="gameSelect">Select a Game:</label>
         <select id="gameSelect">
             <!-- Games will be populated here by JavaScript -->
         </select>
     </div>
-    
+
     <div id="plotArea">
         <!-- D3 Plot will be inserted here -->
     </div>
-    
+
 
     <script src="script.js"></script>
 </body>
