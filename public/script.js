@@ -1,4 +1,4 @@
-import {MAMBA} from "./calculations.js";
+import {ScoreNormalizedMomentum, MAMBA} from "./calculations.js";
 
 document.addEventListener('DOMContentLoaded', function () {
     const selectYear = document.getElementById('yearSelect');
@@ -224,6 +224,11 @@ function plotGameData(gid, year) {
         })
 
         console.log(game_data)
+
+        // get the momentum1:
+        // Compared with game_data, momentum1 adds homeTeamMomentum and awayTeamMomentum attributes to each event.
+        var momentum1 = ScoreNormalizedMomentum(game_data)
+        console.log("momentum1", momentum1)
 
         const x = d3.scaleLinear()
             .domain([0, 2880])
