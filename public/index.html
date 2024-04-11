@@ -5,10 +5,14 @@
     <link rel="stylesheet" type="text/css" href="style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select a Year</title>
+
+    <!-- Load Javascript Files -->
+    <!--    <script type="text/javascript" src="lib/d3.v5.min.js"></script>-->
+    <script type="text/javascript" src="lib/d3.v7.min.js"></script>
+    <script type="module" src="calculations.js"></script>
+    <script type="module" src="script.js"></script>
 </head>
 <body>
-<!--    <script type="text/javascript" src="lib/d3.v5.min.js"></script>-->
-    <script type="text/javascript" src="lib/d3.v7.min.js"></script>
     <h1>NBA GAME ANALYSIS</h1>
     <select id="yearSelect">
         <option value="">--Please choose a year--</option>
@@ -29,8 +33,5 @@
     <div id="plotArea">
         <!-- D3 Plot will be inserted here -->
     </div>
-
-
-    <script src="script.js"></script>
 </body>
 </html>

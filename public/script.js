@@ -1,3 +1,5 @@
+import {MAMBA} from "./calculations.js";
+
 document.addEventListener('DOMContentLoaded', function () {
     const selectYear = document.getElementById('yearSelect');
     for (let year = 2000; year <= 2023; year++) {
@@ -144,6 +146,8 @@ function plotGameData(gid, year) {
             }
         });
 
+        MAMBA(game_data);
+
         var teams = Array.from(new Set(game
             .filter(function (d) {
                 return d.PLAYER1_TEAM_NICKNAME !== "";
@@ -168,7 +172,6 @@ function plotGameData(gid, year) {
             game_data[0].score_diff = "0"
             game_data[0].score = "0 - 0"
         }
-        ;
 
         for (let i = 1; i < game_data.length; i++) {
             if (game_data[i].score_diff === "") {
@@ -222,15 +225,15 @@ function plotGameData(gid, year) {
 
         console.log(game_data)
 
-        x = d3.scaleLinear()
+        const x = d3.scaleLinear()
             .domain([0, 2880])
             .range([margin.left, width - margin.right])
 
-        y = d3.scaleLinear()
+        const y = d3.scaleLinear()
             .domain([-20, 20])
             .range([height - margin.bottom, margin.top])
 
-        line = d3.line()
+        const line = d3.line()
             .curve(d3.curveStepAfter)
             .x(d => x(d.t))
             .y(d => y(d.score_diff))
@@ -244,7 +247,7 @@ function plotGameData(gid, year) {
             .attr("class", "lead-tracker")
 
         // x-Axis
-        xAxis = g => {
+        const xAxis = g => {
             g.append("g")
                 .attr("transform", "translate(0," + (height - margin.bottom) + ")")
                 .call(d3.axisBottom(x).tickSizeOuter(0).tickSize(-height + margin.top + margin.bottom).tickValues(periods.map(d => d.t)))
@@ -266,7 +269,7 @@ function plotGameData(gid, year) {
 
 
         // y-Axis
-        yAxis = g => {
+        const yAxis = g => {
             g.append("g")
                 .attr("transform", "translate(" + margin.left + ",0)")
                 .call(d3.axisLeft(y).tickSizeOuter(0).tickSize(-width + margin.left + margin.right).tickFormat(d => Math.abs(d)))
