@@ -183,6 +183,8 @@ function plotGameData(gid, year) {
             }
         }
 
+        
+
         game_data.forEach(function (d) {
             d.score_diff = +d.score_diff
         })
@@ -212,6 +214,8 @@ function plotGameData(gid, year) {
         }
 
         // plot setup
+        const maxScoreDiff = d3.max(game_data, d => Math.abs(d.score_diff));
+
         game_data.forEach(function (d) {
             d.t = getElapsed(d.period, d.time_left)
         })
@@ -235,7 +239,8 @@ function plotGameData(gid, year) {
             .range([margin.left, width - margin.right])
 
         const y = d3.scaleLinear()
-            .domain([-20, 20])
+            //.domain([-20, 20])
+            .domain( [-maxScoreDiff*1.15, maxScoreDiff*1.15 ])
             .range([height - margin.bottom, margin.top])
 
         const line = d3.line()
@@ -329,6 +334,8 @@ function plotGameData(gid, year) {
         }
 
         // checkbox and events
+        
+
         var selectedEventTypes = []
 
         var types = eventypes.map(function (d) {
@@ -365,17 +372,19 @@ function plotGameData(gid, year) {
 
             const event_data = game_data.filter(d => selectedEventTypes.includes(d.etype))
 
-            circles = svg.selectAll("circle")
-                .data(event_data)
+            let circles = svg.selectAll("circle").data(event_data);
 
-            circles.exit().remove()
+            // Exit pattern: remove circles that no longer match the filtered data
+            circles.exit().remove();
 
-            circles.attr("cx", d => x(d.t)).attr("cy", d => y(d.score_diff))
-                .attr("r", 5)
-                .attr("fill", d => accent(d.etype))
-                .on("mouseover", mouseOver)
-                .on("mouseout", mouseOut)
+            circles.attr("cx", d => x(d.t))
+           .attr("cy", d => y(d.score_diff))
+           .attr("r", 5)
+           .attr("fill", d => accent(d.etype))
+           .on("mouseover", mouseOver)
+           .on("mouseout", mouseOut);
 
+           
             circles.enter()
                 .append("circle")
                 .attr("cx", d => x(d.t))
@@ -383,7 +392,7 @@ function plotGameData(gid, year) {
                 .attr("r", 5)
                 .attr("fill", d => accent(d.etype))
                 .on("mouseover", mouseOver)
-                .on("mouseout", mouseOut)
+                .on("mouseout", mouseOut);
         }
         document.getElementById('plotSkeleton').style.display = 'none'; // Hide the skeleton loader
     });
