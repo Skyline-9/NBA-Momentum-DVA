@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     const selectYear = document.getElementById('yearSelect');
-    for (let year = 2000; year <= 2022; year++) {
+    for (let year = 2000; year <= 2023; year++) {
         const option = document.createElement('option');
         option.value = year;
         option.textContent = year;
@@ -18,6 +18,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Hide the game select dropdown
                 document.getElementById('gameSelectContainer').style.display = 'none';
+
+                // Clear graph
+                document.getElementById('plotArea').innerHTML = '';
+
+                document.getElementById('plotSkeleton').style.display = 'block'; // Show skeleton Loader
 
                 const response = await fetch(`/fetch-nba-data/${selectedYear}`);
                 const gamesData = await response.json();
@@ -48,6 +53,8 @@ function displayGames(gamesData, year) {
     gameSelectLoadMessage.style.display = 'none'; // Hide loading message
 
     gameSelect.onchange = function () {
+        document.getElementById('plotSkeleton').style.display = 'block'; // Show the skeleton loader
+
         const selectedGameID = this.value;
         if (selectedGameID) {
             // Prepare the plot area for the new plot
@@ -63,10 +70,8 @@ function plotGameData(gid, year) {
     console.log(year)
     // Ensure your path to the CSV is correct and accessible
 
-
-
     d3.csv(`data/nbastats_${year}/nbastats_${year}.csv`).then(data => {
-        const margin = ({ top: 30, right: 30, bottom: 30, left: 40 })
+        const margin = ({top: 30, right: 30, bottom: 30, left: 40})
         const height = 750
         const width = 1500
 
@@ -76,34 +81,34 @@ function plotGameData(gid, year) {
             .attr("height", height);
         const game = data.filter(d => d["GAME_ID"] === gid);
         var periods = [
-            { t: 0, label: "Q1" },
-            { t: 720, label: "Q2" },
-            { t: 1440, label: "Q3" },
-            { t: 2160, label: "Q4" },
-            { t: 2880, label: "OT1" },
-            { t: 3180, label: "OT2" },
-            { t: 3480, label: "OT3" },
-            { t: 3780, label: "OT4" },
-            { t: 4080, label: "OT5" },
-            { t: 4380, label: "OT6" },
-            { t: 4680, label: "OT7" },
-            { t: 4980, label: "OT8" },
-            { t: 5280, label: "OT9" },
-            { t: 5580, label: "OT10" },
+            {t: 0, label: "Q1"},
+            {t: 720, label: "Q2"},
+            {t: 1440, label: "Q3"},
+            {t: 2160, label: "Q4"},
+            {t: 2880, label: "OT1"},
+            {t: 3180, label: "OT2"},
+            {t: 3480, label: "OT3"},
+            {t: 3780, label: "OT4"},
+            {t: 4080, label: "OT5"},
+            {t: 4380, label: "OT6"},
+            {t: 4680, label: "OT7"},
+            {t: 4980, label: "OT8"},
+            {t: 5280, label: "OT9"},
+            {t: 5580, label: "OT10"},
         ];
 
         var eventypes = [
-            { type: 1, label: "Made Shot" },
-            { type: 2, label: "Missed Shot" },
-            { type: 3, label: "Free Throw" }, // the score will tell if it was made or not
-            { type: 4, label: "Rebound" },
-            { type: 5, label: "Turnover" },
-            { type: 6, label: "Foul" },
+            {type: 1, label: "Made Shot"},
+            {type: 2, label: "Missed Shot"},
+            {type: 3, label: "Free Throw"}, // the score will tell if it was made or not
+            {type: 4, label: "Rebound"},
+            {type: 5, label: "Turnover"},
+            {type: 6, label: "Foul"},
             //{type: 7, label: "Violation"},
-            { type: 8, label: "Substitution" },
-            { type: 9, label: "Timeout" },
+            {type: 8, label: "Substitution"},
+            {type: 9, label: "Timeout"},
             //{type: 10, label: "Jumpball"},
-            { type: 11, label: "Ejection" },
+            {type: 11, label: "Ejection"},
             //{type: 12, label: "Period Begin"},
             //{type: 13, label: "Period End"},
             //{type: 14, lable: "Hello"}
@@ -128,7 +133,6 @@ function plotGameData(gid, year) {
         }
 
 
-
         var game_data = game.map(function (d) {
             return {
                 eventnum: +d.EVENTNUM,
@@ -141,8 +145,12 @@ function plotGameData(gid, year) {
         });
 
         var teams = Array.from(new Set(game
-            .filter(function (d) { return d.PLAYER1_TEAM_NICKNAME !== ""; })
-            .map(function (d) { return d.PLAYER1_TEAM_NICKNAME })))
+            .filter(function (d) {
+                return d.PLAYER1_TEAM_NICKNAME !== "";
+            })
+            .map(function (d) {
+                return d.PLAYER1_TEAM_NICKNAME
+            })))
 
 
         // sanity check to order all events
@@ -159,7 +167,8 @@ function plotGameData(gid, year) {
         if (game_data.length > 0) {
             game_data[0].score_diff = "0"
             game_data[0].score = "0 - 0"
-        };
+        }
+        ;
 
         for (let i = 1; i < game_data.length; i++) {
             if (game_data[i].score_diff === "") {
@@ -314,7 +323,9 @@ function plotGameData(gid, year) {
         // checkbox and events
         var selectedEventTypes = []
 
-        var types = eventypes.map(function (d) { return d.type });
+        var types = eventypes.map(function (d) {
+            return d.type
+        });
         types = types.filter(function (d, i, self) {
             return self.indexOf(d) === i;
         })
@@ -365,8 +376,7 @@ function plotGameData(gid, year) {
                 .attr("fill", d => accent(d.etype))
                 .on("mouseover", mouseOver)
                 .on("mouseout", mouseOut)
-
-        };
-
+        }
+        document.getElementById('plotSkeleton').style.display = 'none'; // Hide the skeleton loader
     });
 }
