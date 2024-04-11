@@ -83,38 +83,25 @@ function plotGameData(gid, year) {
             .attr("height", height);
 
 
-        
         const game = data.filter(d => d["GAME_ID"] === gid);
-        var periods = [
-            {t: 0, label: "Q1"},
-            {t: 720, label: "Q2"},
-            {t: 1440, label: "Q3"},
-            {t: 2160, label: "Q4"},
-            {t: 2880, label: "OT1"},
-            {t: 3180, label: "OT2"},
-            {t: 3480, label: "OT3"},
-            {t: 3780, label: "OT4"},
-            {t: 4080, label: "OT5"},
-            {t: 4380, label: "OT6"},
-            {t: 4680, label: "OT7"},
-            {t: 4980, label: "OT8"},
-            {t: 5280, label: "OT9"},
-            {t: 5580, label: "OT10"},
-        ];
+        var periods = [{t: 0, label: "Q1"}, {t: 720, label: "Q2"}, {t: 1440, label: "Q3"}, {
+            t: 2160,
+            label: "Q4"
+        }, {t: 2880, label: "OT1"}, {t: 3180, label: "OT2"}, {t: 3480, label: "OT3"}, {t: 3780, label: "OT4"}, {
+            t: 4080,
+            label: "OT5"
+        }, {t: 4380, label: "OT6"}, {t: 4680, label: "OT7"}, {t: 4980, label: "OT8"}, {t: 5280, label: "OT9"}, {
+            t: 5580,
+            label: "OT10"
+        },];
 
-        var eventypes = [
-            {type: 1, label: "Made Shot"},
-            {type: 2, label: "Missed Shot"},
-            {type: 3, label: "Free Throw"}, // the score will tell if it was made or not
-            {type: 4, label: "Rebound"},
-            {type: 5, label: "Turnover"},
-            {type: 6, label: "Foul"},
-            //{type: 7, label: "Violation"},
-            {type: 8, label: "Substitution"},
-            {type: 9, label: "Timeout"},
-            //{type: 10, label: "Jumpball"},
-            {type: 11, label: "Ejection"},
-            //{type: 12, label: "Period Begin"},
+        var eventypes = [{type: 1, label: "Made Shot"}, {type: 2, label: "Missed Shot"}, {type: 3, label: "Free Throw"}, // the score will tell if it was made or not
+            {type: 4, label: "Rebound"}, {type: 5, label: "Turnover"}, {
+                type: 6,
+                label: "Foul"
+            }, //{type: 7, label: "Violation"},
+            {type: 8, label: "Substitution"}, {type: 9, label: "Timeout"}, //{type: 10, label: "Jumpball"},
+            {type: 11, label: "Ejection"}, //{type: 12, label: "Period Begin"},
             //{type: 13, label: "Period End"},
             //{type: 14, lable: "Hello"}
         ]
@@ -186,7 +173,6 @@ function plotGameData(gid, year) {
             }
         }
 
-        
 
         game_data.forEach(function (d) {
             d.score_diff = +d.score_diff
@@ -220,20 +206,20 @@ function plotGameData(gid, year) {
         let logo_2_url = `logos/${away_team}.png`.toLowerCase()
 
         svg.append('image')
-        .attr('xlink:href', logo_1_url) 
-        .attr('x', 25) 
-        .attr('y', 50) 
-        .attr('width', 100) 
-        .attr('height', 100); 
+            .attr('xlink:href', logo_1_url)
+            .attr('x', 25)
+            .attr('y', 50)
+            .attr('width', 100)
+            .attr('height', 100);
 
         svg.append('image')
-        .attr('xlink:href', logo_2_url) 
-        .attr('x', 25) 
-        .attr('y', height - margin.bottom - 100) 
-        .attr('width', 100) 
-        .attr('height', 100); 
+            .attr('xlink:href', logo_2_url)
+            .attr('x', 25)
+            .attr('y', height - margin.bottom - 100)
+            .attr('width', 100)
+            .attr('height', 100);
 
-        
+
         // plot setup
         const maxScoreDiff = d3.max(game_data, d => Math.abs(d.score_diff));
 
@@ -243,9 +229,7 @@ function plotGameData(gid, year) {
 
         let lastPlay = game_data[game_data.length - 1]
         game_data.push({
-            period: lastPlay.period,
-            t: getElapsed(lastPlay.period, lastPlay.time_left),
-            score_diff: 0
+            period: lastPlay.period, t: getElapsed(lastPlay.period, lastPlay.time_left), score_diff: 0
         })
 
         console.log(game_data)
@@ -261,7 +245,7 @@ function plotGameData(gid, year) {
 
         const y = d3.scaleLinear()
             //.domain([-20, 20])
-            .domain( [-maxScoreDiff*1.15, maxScoreDiff*1.15 ])
+            .domain([-maxScoreDiff * 1.15, maxScoreDiff * 1.15])
             .range([height - margin.bottom, margin.top])
 
         const line = d3.line()
@@ -269,6 +253,17 @@ function plotGameData(gid, year) {
             .x(d => x(d.t))
             .y(d => y(d.score_diff))
 
+        const areaNeg = d3.area()
+            .curve(d3.curveStepAfter)
+            .x(d => x(d.t))
+            .y0(y(0.0))
+            .y1(d => y(Math.min(0.0, d.score_diff)));
+
+        const areaPos = d3.area()
+            .curve(d3.curveStepAfter)
+            .x(d => x(d.t))
+            .y0(y(0.0))
+            .y1(d => y(Math.max(0.0, d.score_diff)));
 
         // plot
         svg.append("g")
@@ -276,6 +271,19 @@ function plotGameData(gid, year) {
             .data([game_data])
             .attr("d", line)
             .attr("class", "lead-tracker")
+            // .attr("fill", "none");
+
+        svg.append("g")
+            .append("path")
+            .data([game_data])
+            .attr("fill", "rgba(49, 207, 255, 0.6)")
+            .attr("d", areaPos);
+
+        svg.append("g")
+            .append("path")
+            .data([game_data])
+            .attr("fill", "rgba(216, 137, 137, 0.6)")
+            .attr("d", areaNeg);
 
         // x-Axis
         const xAxis = g => {
@@ -355,7 +363,7 @@ function plotGameData(gid, year) {
         }
 
         // checkbox and events
-        
+
 
         var selectedEventTypes = []
 
@@ -399,13 +407,13 @@ function plotGameData(gid, year) {
             circles.exit().remove();
 
             circles.attr("cx", d => x(d.t))
-           .attr("cy", d => y(d.score_diff))
-           .attr("r", 5)
-           .attr("fill", d => accent(d.etype))
-           .on("mouseover", mouseOver)
-           .on("mouseout", mouseOut);
+                .attr("cy", d => y(d.score_diff))
+                .attr("r", 5)
+                .attr("fill", d => accent(d.etype))
+                .on("mouseover", mouseOver)
+                .on("mouseout", mouseOut);
 
-           
+
             circles.enter()
                 .append("circle")
                 .attr("cx", d => x(d.t))
@@ -415,7 +423,7 @@ function plotGameData(gid, year) {
                 .on("mouseover", mouseOver)
                 .on("mouseout", mouseOut);
         }
-        
+
 
         document.getElementById('plotSkeleton').style.display = 'none'; // Hide the skeleton loader
     });
