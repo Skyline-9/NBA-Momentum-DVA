@@ -300,8 +300,6 @@ function plotGameData(gid, year) {
 
 
         // y-Axis
-
-
         const yAxis = g => {
             g.append("g")
                 .attr("transform", "translate(" + margin.left + ",0)")
