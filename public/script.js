@@ -73,7 +73,7 @@ function plotGameData(gid, year) {
     // Ensure your path to the CSV is correct and accessible
 
     d3.csv(`data/nbastats_${year}/nbastats_${year}.csv`).then(data => {
-        const margin = ({top: 30, right: 30, bottom: 30, left: 40})
+        const margin = ({top: 50, right: 30, bottom: 30, left: 150})
         const height = 750
         const width = 1500
 
@@ -81,6 +81,9 @@ function plotGameData(gid, year) {
             .attr("id", "nba-plot")
             .attr("width", width)
             .attr("height", height);
+
+
+        
         const game = data.filter(d => d["GAME_ID"] === gid);
         var periods = [
             {t: 0, label: "Q1"},
@@ -213,6 +216,24 @@ function plotGameData(gid, year) {
             }
         }
 
+        let logo_1_url = `logos/${home_team}.png`.toLowerCase()
+        let logo_2_url = `logos/${away_team}.png`.toLowerCase()
+
+        svg.append('image')
+        .attr('xlink:href', logo_1_url) 
+        .attr('x', 25) 
+        .attr('y', 50) 
+        .attr('width', 100) 
+        .attr('height', 100); 
+
+        svg.append('image')
+        .attr('xlink:href', logo_2_url) 
+        .attr('x', 25) 
+        .attr('y', height - margin.bottom - 100) 
+        .attr('width', 100) 
+        .attr('height', 100); 
+
+        
         // plot setup
         const maxScoreDiff = d3.max(game_data, d => Math.abs(d.score_diff));
 
@@ -279,6 +300,8 @@ function plotGameData(gid, year) {
 
 
         // y-Axis
+
+
         const yAxis = g => {
             g.append("g")
                 .attr("transform", "translate(" + margin.left + ",0)")
@@ -394,6 +417,8 @@ function plotGameData(gid, year) {
                 .on("mouseover", mouseOver)
                 .on("mouseout", mouseOut);
         }
+        
+
         document.getElementById('plotSkeleton').style.display = 'none'; // Hide the skeleton loader
     });
 }
