@@ -3,6 +3,39 @@
  * Description: Various calculation methods for calculating momentum.
  */
 
+const TEAM_TO_FULL_NAME = {
+    "warriors": "Golden State Warriors",
+    "clippers": "Los Angeles Clippers",  // IMPORTANT: Also check for San Diego Clippers!!
+    "lakers": "Los Angeles Lakers",
+    "suns": "Phoenix Suns",
+    "kings": "Sacramento Kings",
+    "mavericks": "Dallas Mavericks",
+    "rockets": "Houston Rockets",
+    "grizzlies": "Memphis Grizzlies",
+    "pelicans": "New Orleans Pelicans",
+    "spurs": "San Antonio Spurs",
+    "nuggets": "Denver Nuggets",
+    "timberwolves": "Minnesota Timberwolves",
+    "thunder": "Oklahoma City Thunder",
+    "trail blazers": "Portland Trail Blazers",
+    "jazz": "Utah Jazz",
+    "hawks": "Atlanta Hawks",
+    "celtics": "Boston Celtics",
+    "nets": "Brooklyn Nets",
+    "hornets": "Charlotte Hornets",
+    "bulls": "Chicago Bulls",
+    "cavaliers": "Cleveland Cavaliers",
+    "pistons": "Detroit Pistons",
+    "pacers": "Indiana Pacers",
+    "heat": "Miami Heat",
+    "bucks": "Milwaukee Bucks",
+    "knicks": "New York Knicks",
+    "magic": "Orlando Magic",
+    "sixers": "Philadelphia 76ers",
+    "raptors": "Toronto Raptors",
+    "wizards": "Washington Wizards"
+};
+
 function ScoreNormalizedMomentum(gameData, interval=10, scaling=60) {
     // if use points/timeDiff, the value is higher, the momentum is higher
     function calMomentum(teamQueue){
@@ -17,7 +50,7 @@ function ScoreNormalizedMomentum(gameData, interval=10, scaling=60) {
             const timeDiff = teamQueue[i].time_s - teamQueue[i-1].time_s;
             // make sure that the time changed
             if (timeDiff !== 0) {
-                
+
                 sumNormalizedTime += scaling * scoreChange / timeDiff;
             }
             else{
@@ -54,7 +87,7 @@ function ScoreNormalizedMomentum(gameData, interval=10, scaling=60) {
             homeTeamMomentum = 0;
             awayTeamMomentum = 0;
         }else{
-            
+
             homeTeamQueue.push({time_s: event.t, score: homeTeamScore});
             awayTeamQueue.push({time_s: event.t, score: awayTeamScore});
 
@@ -79,8 +112,43 @@ function ScoreNormalizedMomentum(gameData, interval=10, scaling=60) {
     return new_gameData
 }
 
+function PAPM(gameData, homeTeam, awayTeam) {
+    const relevantPaceData = {};
+    getPace(gameData).then(pace => {
+        relevantPaceData["league"] = pace["League Average"];
+        relevantPaceData["homeTeam"] = pace[TEAM_TO_FULL_NAME[homeTeam]];
+        relevantPaceData["awayTeam"] = pace[TEAM_TO_FULL_NAME[awayTeam]];
+    }).catch(err => {
+        console.error(err);
+    });
+    console.log(relevantPaceData);
+
+    //TODO
+
+
+}
+
 function MAMBA(gameData) {
     //TODO
 }
 
-export { ScoreNormalizedMomentum, MAMBA };
+async function getPace(gameData) {
+    //Make API call to /api/pace/:year
+    const res = await fetch(`/api/pace/${year}`);
+    return await res.json();
+}
+
+function getMomentum(gameData, method) {
+    switch (method) {
+        case "ScoreNormalizedMomentum":
+            return ScoreNormalizedMomentum(gameData);
+        case "PAPM":
+            return PAPM(gameData);
+        case "MAMBA":
+            return MAMBA(gameData);
+        default:
+            return ScoreNormalizedMomentum(gameData);
+    }
+}
+
+export { getMomentum };
