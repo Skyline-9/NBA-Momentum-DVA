@@ -7,34 +7,46 @@
     <title>Select a Year</title>
 
     <!-- Load Javascript Files -->
-    <!--    <script type="text/javascript" src="lib/d3.v5.min.js"></script>-->
     <script type="text/javascript" src="lib/d3.v7.min.js"></script>
     <script type="module" src="calculations.js"></script>
     <script type="module" src="script.js"></script>
 </head>
 <body>
+<div class="intro">
     <h1>NBA GAME ANALYSIS</h1>
-    <select id="yearSelect">
-        <option value="">--Please choose a year--</option>
-        <!-- JavaScript will populate year options here -->
-    </select>
+    <p>Authors go here</p>
+</div>
 
-    <p id="gameSelectLoadMessage" style="display: none">Loading</p>
-
-    <div id="gameSelectContainer" style="display: none">
-        <label for="gameSelect">Select a Game:</label>
-        <select id="gameSelect">
-            <!-- Games will be populated here by JavaScript -->
+<div class="graph-area">
+    <div class="graph-selectors">
+        <select id="yearSelect">
+            <option value="">--Please choose a year--</option>
+            <!-- JavaScript will populate year options here -->
         </select>
+
+        <p id="gameSelectLoadMessage" style="display: none">Loading</p>
+
+        <div id="gameSelectContainer" style="display: none">
+            <label for="gameSelect" class="select">Select a Game:
+                <select id="gameSelect">
+                    <!-- Games will be populated here by JavaScript -->
+                </select>
+            </label>
+        </div>
     </div>
 
     <div class="loading" id="plotSkeleton"></div>
-
-    <div id="plotArea">
-        <!-- D3 Plot will be inserted here -->
+    <div class="card" id="graph-card" style="display: none">
+        <div id="plotArea">
+            <!-- D3 Plot will be inserted here -->
+        </div>
+        <div id="checkbox"></div>
     </div>
+</div>
 
-    <div id="checkbox"></div>
+<div class="description">
+    <p>This is a quick description of the momentum stats to make us look cool</p>
+</div>
 
 </body>
 </html>

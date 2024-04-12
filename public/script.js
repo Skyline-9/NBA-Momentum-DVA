@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const gameSelectLoadMessage = document.getElementById('gameSelectLoadMessage');
                 gameSelectLoadMessage.style.display = 'block'; // Show loading message
+                document.getElementById("graph-card").style.display = "none";
 
                 // Hide the game select dropdown
                 document.getElementById('gameSelectContainer').style.display = 'none';
@@ -26,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 document.getElementById('plotSkeleton').style.display = 'block'; // Show skeleton Loader
 
-                const response = await fetch(`/fetch-nba-data/${selectedYear}`);
+                const response = await fetch(`/api/nba_season/${selectedYear}`);
                 const gamesData = await response.json();
                 displayGames(gamesData, selectedYear); // Call to function that handles display
             } catch (error) {
@@ -56,6 +57,7 @@ function displayGames(gamesData, year) {
 
     gameSelect.onchange = function () {
         document.getElementById('plotSkeleton').style.display = 'block'; // Show the skeleton loader
+        document.getElementById("graph-card").style.display = "none";
 
         const selectedGameID = this.value;
         if (selectedGameID) {
@@ -74,8 +76,8 @@ function plotGameData(gid, year) {
 
     d3.csv(`data/nbastats_${year}/nbastats_${year}.csv`).then(data => {
         const margin = ({top: 50, right: 30, bottom: 30, left: 150})
-        const height = 750
-        const width = 1500
+        const height = 750;
+        const width = 1250;
 
         const svg = d3.select("#plotArea").append("svg")
             .attr("id", "nba-plot")
@@ -209,15 +211,15 @@ function plotGameData(gid, year) {
             .attr('xlink:href', logo_1_url)
             .attr('x', 25)
             .attr('y', 50)
-            .attr('width', 100)
-            .attr('height', 100);
+            .attr('width', 75)
+            .attr('height', 75);
 
         svg.append('image')
             .attr('xlink:href', logo_2_url)
             .attr('x', 25)
             .attr('y', height - margin.bottom - 100)
-            .attr('width', 100)
-            .attr('height', 100);
+            .attr('width', 75)
+            .attr('height', 75);
 
 
         // plot setup
@@ -425,6 +427,7 @@ function plotGameData(gid, year) {
         }
 
 
+        document.getElementById("graph-card").style.display = "block";
         document.getElementById('plotSkeleton').style.display = 'none'; // Hide the skeleton loader
     });
 }
