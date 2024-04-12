@@ -11,7 +11,28 @@
     "http"
   ],
   "paths": {
-    "/fetch-nba-data/{year}": {
+    "/api/pace/{year}": {
+      "get": {
+        "description": "Fetch NBA pace for a given season",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Season pace data for every team and league average."
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/nba_season/{year}": {
       "get": {
         "description": "Fetch NBA data for a given year",
         "parameters": [

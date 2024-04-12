@@ -16,7 +16,54 @@ app.use(express.static('public'));
 
 app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
-app.get('/fetch-nba-data/:year', async (req, res) => {
+app.get("/api/pace/:year", async (req, res) => {
+    // #swagger.description = 'Fetch NBA pace for a given season'
+    /* #swagger.responses[200] = {
+          description: 'Season pace data for every team and league average.',
+    } */
+
+    const year = req.params.year;
+
+    // Check if file is cached
+    const path = `./public/data/pace/${year}-pace.json`;
+    if (fs.existsSync(path)) {
+        console.log("Pace data already exists, reading file...");
+
+        try {
+            const paceData = JSON.parse(fs.readFileSync(path));
+            res.json(paceData);
+            return;
+        } catch (error) {
+            console.error(error);
+            res.status(500).send("Error reading from cached pace data!");
+        }
+    }
+
+    // Download file
+    // IMPORTANT: Change endpoint url if file is moved
+    const paceDataUrl = `https://raw.githubusercontent.com/Skyline-9/NBA-Pace-Data/main/data/${year}-pace.json`;
+    axios.get(paceDataUrl).then(response => {
+        // Create folder if doesn't exist
+        fs.promises.mkdir('./public/data/pace', {recursive: true}).catch(console.error);
+
+        // Write response.data to file
+        fs.writeFile(`./public/data/pace/${year}-pace.json`, JSON.stringify(response.data), {recursive: true}, (err) => {
+            if (err) {
+                console.error(err);
+            } else {
+                console.log("Pace file properly cached!");
+            }
+        });
+
+        res.json(response.data);
+    })
+        .catch(error => {
+            console.error(error);
+            res.status(500).send("Error downloading pace data!")
+        });
+})
+
+app.get('/api/nba_season/:year', async (req, res) => {
     // #swagger.description = 'Fetch NBA data for a given year'
     /* #swagger.responses[200] = {
           description: 'List of games in NBA season.',
@@ -27,7 +74,7 @@ app.get('/fetch-nba-data/:year', async (req, res) => {
     try {
         // Check if the data is already downloaded
         const checkPath = `./public/data/nbastats_${year}/nbastats_${year}.csv`;
-        if(fs.existsSync(checkPath)) {
+        if (fs.existsSync(checkPath)) {
             console.log("File already exists, reading directly...")
 
             const gamesData = await readCsvFile(checkPath);
