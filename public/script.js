@@ -145,6 +145,10 @@ function plotGameData(gid, year) {
                 return d.PLAYER1_TEAM_NICKNAME !== "";
             })
             .map(function (d) {
+                // Check for trail%20blazers
+                if (d.PLAYER1_TEAM_NICKNAME.substringData(0, 5) === "trail") {
+                    return "trailBlazers";
+                }
                 return d.PLAYER1_TEAM_NICKNAME
             })))
 
@@ -273,7 +277,7 @@ function plotGameData(gid, year) {
             .data([game_data])
             .attr("d", line)
             .attr("class", "lead-tracker")
-            // .attr("fill", "none");
+        // .attr("fill", "none");
 
         svg.append("g")
             .append("path")
