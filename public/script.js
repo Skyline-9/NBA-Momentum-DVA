@@ -1,4 +1,4 @@
-import {ScoreNormalizedMomentum, MAMBA} from "./calculations.js";
+import {getMomentum} from "./calculations.js";
 
 document.addEventListener('DOMContentLoaded', function () {
     const selectYear = document.getElementById('yearSelect');
@@ -134,29 +134,14 @@ function plotGameData(gid, year) {
                 score_diff: d.SCOREMARGIN,
                 time_left: d.PCTIMESTRING,
                 period: +d.PERIOD,
-                etype: +d.EVENTMSGTYPE
+                etype: +d.EVENTMSGTYPE,
+                description: d.HOMEDESCRIPTION + d.NEUTRALDESCRIPTION + d.VISITORDESCRIPTION
             }
         });
 
-        MAMBA(game_data);
-
         var teams = Array.from(new Set(game
-            .filter(function (d) {
-                return d.PLAYER1_TEAM_NICKNAME !== "";
-            })
-            .map(function (d) {
-                // Check for trail%20blazers
-                if (d.PLAYER1_TEAM_NICKNAME.substringData(0, 5) === "trail") {
-                    return "trailBlazers";
-                }
-                return d.PLAYER1_TEAM_NICKNAME
-            })))
-
-
-        // sanity check to order all events
-        game_data.sort(function (a, b) {
-            return a.eventnum - b.eventnum
-        });
+            .filter(function(d) { return d.PLAYER1_TEAM_NICKNAME !== "";})
+            .map(function(d) {return d.PLAYER1_TEAM_NICKNAME})))
 
         // format score difference correctly
         game_data.forEach(function (d) {
@@ -208,8 +193,8 @@ function plotGameData(gid, year) {
             }
         }
 
-        let logo_1_url = `logos/${home_team}.png`.toLowerCase()
-        let logo_2_url = `logos/${away_team}.png`.toLowerCase()
+        let logo_1_url = `logos/${home_team.replace(/\s/g, '')}.png`.toLowerCase()
+        let logo_2_url = `logos/${away_team.replace(/\s/g, '')}.png`.toLowerCase()
 
         svg.append('image')
             .attr('xlink:href', logo_1_url)
@@ -235,18 +220,15 @@ function plotGameData(gid, year) {
 
         let lastPlay = game_data[game_data.length - 1]
         game_data.push({
-            period: lastPlay.period, t: getElapsed(lastPlay.period, lastPlay.time_left), score_diff: 0
+            period: lastPlay.period, 
+            t: getElapsed(lastPlay.period, lastPlay.time_left), 
+            score_diff: 0,
         })
 
-        console.log(game_data)
-
-        // get the momentum1:
-        // Compared with game_data, momentum1 adds homeTeamMomentum and awayTeamMomentum attributes to each event.
-        var momentum1 = ScoreNormalizedMomentum(game_data)
-        console.log("momentum1", momentum1)
-
+        let gameLength = game_data[game_data.length - 1].t
+        
         const x = d3.scaleLinear()
-            .domain([0, 2880])
+            .domain([0, gameLength])
             .range([margin.left, width - margin.right])
 
         const y = d3.scaleLinear()
@@ -254,7 +236,7 @@ function plotGameData(gid, year) {
             .domain([-maxScoreDiff * 1.15, maxScoreDiff * 1.15])
             .range([height - margin.bottom, margin.top])
 
-        const line = d3.line()
+        const line_score_diff = d3.line()
             .curve(d3.curveStepAfter)
             .x(d => x(d.t))
             .y(d => y(d.score_diff))
@@ -275,7 +257,7 @@ function plotGameData(gid, year) {
         svg.append("g")
             .append("path")
             .data([game_data])
-            .attr("d", line)
+            .attr("d", line_score_diff)
             .attr("class", "lead-tracker")
         // .attr("fill", "none");
 
@@ -290,6 +272,42 @@ function plotGameData(gid, year) {
             .data([game_data])
             .attr("fill", "rgba(216, 137, 137, 0.6)")
             .attr("d", areaNeg);
+
+
+        // momentum plots
+        let momentum1 = getMomentum(game_data, "ScoreNormalizedMomentum")
+        momentum1.pop()
+
+        const maxHomeMomentum = d3.max(momentum1, d => Math.abs(d.homeTeamMomentum));
+        const maxAwayMomentum = d3.max(momentum1, d => Math.abs(d.awayTeamMomentum))
+        var maxMomentum1 = Math.max(maxHomeMomentum, maxAwayMomentum)
+
+        const line_home = d3.line()
+            .x(d => x(d.t))
+            .y(d => y((d.homeTeamMomentum / maxMomentum1) * maxScoreDiff))
+
+        svg.append("g")
+            .attr("id", "homeMomentum")
+            .append("path")
+            .data([momentum1])
+            .attr("fill", "none")
+            .attr("stroke", "blue")
+            .attr("stroke-width", 2)
+            .attr("d", line_home);
+
+        const line_away = d3.line()
+            .x(d => x(d.t))
+            .y(d => y(-(d.awayTeamMomentum / maxMomentum1) * maxScoreDiff))
+
+        svg.append("g")
+            .attr("id", "awayMomentum")
+            .append("path")
+            .data([momentum1])
+            .attr("fill", "none")
+            .attr("stroke", "red")
+            .attr("stroke-width", 2)
+            .attr("d", line_away)
+        
 
         // x-Axis
         const xAxis = g => {
@@ -356,15 +374,15 @@ function plotGameData(gid, year) {
 
         function mouseOver(d) {
             const circ = d3.select(this)
+            const data_circ = d3.select(this).datum()
             const [x_, y_] = [parseFloat(circ.attr("cx")), parseFloat(circ.attr("cy"))];
-            console.log(x_, y_)
 
             tooltip.transition()
                 .duration(200)
                 .style("opacity", .9)
-            tooltip.html(d.etype)
-                .style("left", (x_ + 15) + "px")
-                .style("top", (y_ + 12) + "px")
+            tooltip.html(data_circ.description)
+                .style("left", (x_ + 95) + "px")
+                .style("top", (y_ + 175) + "px")
                 .style("display", "block");
         }
 
