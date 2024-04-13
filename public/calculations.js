@@ -76,8 +76,8 @@ function ScoreNormalizedMomentum(gameData, interval=10, scaling=60) {
             return; // the last is no score
         }
         // get scores of two time (return int)
-        const homeTeamScore = parseInt(event.score.split('-')[0]);
-        const awayTeamScore = parseInt(event.score.split('-')[1]);
+        const homeTeamScore = parseInt(event.score.split('-')[1]);
+        const awayTeamScore = parseInt(event.score.split('-')[0]);
 
         // clear the data for each new period
         if (event.period != cur_period){
