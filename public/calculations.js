@@ -123,9 +123,40 @@ function PAPM(gameData, homeTeam, awayTeam) {
     });
     console.log(relevantPaceData);
 
-    //TODO
+    let currentPeriod = 0;
+    let windowEvents = [];
+    let homePaceAdjusted = relevantPaceData["homeTeam"] / relevantPaceData["league"];
+    let awayPaceAdjusted = relevantPaceData["awayTeam"] / relevantPaceData["league"];
 
+    // Iterate over the gameData to calculate PAPM for each event
+    for (let event of gameData) {
+        const [homeScore, awayScore] = event.score.split('-').map(Number);
 
+        if (event.period !== currentPeriod) {
+            // When the period changes, reset windowEvents
+            currentPeriod = event.period;
+            windowEvents = [];
+        }
+
+        // Add current event to the window
+        windowEvents.push({ time: event.t, homeScore, awayScore });
+
+        // Remove events outside the window (3-minute window)
+        while (windowEvents.length > 0 && event.t - windowEvents[0].time > 180) {
+            windowEvents.shift();
+        }
+
+        const windowStart = windowEvents[0];
+        const windowEnd = windowEvents[windowEvents.length - 1];
+        const pointsScored = windowEnd.homeScore - windowStart.homeScore;
+        const pointsGivenUp = windowEnd.awayScore - windowStart.awayScore;
+
+        // Calculate PAPM for home and away teams
+        event.homePAPM = (1 / homePaceAdjusted) * (pointsScored - pointsGivenUp);
+        event.awayPAPM = (1 / awayPaceAdjusted) * (pointsGivenUp - pointsScored);
+    }
+
+    return gameData;
 }
 
 function MAMBA(gameData) {
