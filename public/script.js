@@ -233,7 +233,7 @@ function plotGameData(gid, year) {
 
         const y = d3.scaleLinear()
             //.domain([-20, 20])
-            .domain([-maxScoreDiff * 1.15, maxScoreDiff * 1.15])
+            .domain([-maxScoreDiff * 5, maxScoreDiff * 5])
             .range([height - margin.bottom, margin.top])
 
         const line_score_diff = d3.line()
@@ -275,7 +275,7 @@ function plotGameData(gid, year) {
 
 
         // momentum plots
-        let momentum1 = getMomentum(game_data, "ScoreNormalizedMomentum")
+        let momentum1 = getMomentum(game_data, year, "ScoreNormalizedMomentum")
         momentum1.pop()
 
         const maxHomeMomentum = d3.max(momentum1, d => Math.abs(d.homeTeamMomentum));
@@ -307,7 +307,24 @@ function plotGameData(gid, year) {
             .attr("stroke", "red")
             .attr("stroke-width", 2)
             .attr("d", line_away)
-        
+
+
+            
+        let momentum2 = getMomentum(game_data, year, "MAMBA")
+        momentum2.pop()
+
+        const line_MAMBA = d3.line()
+            .x(d => x(d.t))
+            .y(d => y((d.totalMomentum)))
+
+        svg.append("g")
+            .attr("id", "MAMBA")
+            .append("path")
+            .data([momentum2])
+            .attr("fill", "none")
+            .attr("stroke", "green")
+            .attr("stroke-width", 2)
+            .attr("d", line_MAMBA);
 
         // x-Axis
         const xAxis = g => {
@@ -325,6 +342,8 @@ function plotGameData(gid, year) {
                 .attr("text-anchor", "end")
                 .text("FINAL")
         }
+
+
 
         svg.append("g")
             .attr("class", "x-axis")

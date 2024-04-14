@@ -108,7 +108,7 @@ function ScoreNormalizedMomentum(gameData, interval=10, scaling=60) {
         event.homeTeamMomentum = homeTeamMomentum;
         event.awayTeamMomentum = awayTeamMomentum
     });
-
+    // console.log(new_gameData)
     return new_gameData
 }
 
@@ -159,24 +159,83 @@ function PAPM(gameData, homeTeam, awayTeam) {
     return gameData;
 }
 
-function MAMBA(gameData) {
-    //TODO
+function MAMBA(gameData, MAdj, multiplier = 1.1) {
+
+
+    // Helper function to calculate MAMBA for each team
+    function calculateMAMBAForTeam(events) {
+        let momentum = 0;
+        let mult = 0.5;
+        events.forEach(event => {
+            momentum += event.points * mult;
+            mult *= 1.1; // Accumulating multiplier
+        });
+        return momentum; // No need to divide by mult here as it is already factored in
+    }
+
+    let homeTeamQueue = [];
+    let awayTeamQueue = [];
+    let lastScoringTeam = null;
+    console.log("calculating MAMBA")
+    
+    let new_gameData = JSON.parse(JSON.stringify(gameData));
+
+    new_gameData.forEach(event => {
+        if (!event.score) return;
+
+        // Parse the current scores from the event
+        const homeTeamScore = parseInt(event.score.split('-')[1], 10);
+        const awayTeamScore = parseInt(event.score.split('-')[0], 10);
+
+        // Determine points scored in this event
+        let homePoints = homeTeamQueue.length > 0 ? homeTeamScore - homeTeamQueue[homeTeamQueue.length - 1].score : homeTeamScore;
+        let awayPoints = awayTeamQueue.length > 0 ? awayTeamScore - awayTeamQueue[awayTeamQueue.length - 1].score : awayTeamScore;
+
+        // Check if this is a scoring event for the home or away team
+        if ((event.etype === 1 || event.etype === 3) && homePoints > 0) {
+            homeTeamQueue.push({ score: homeTeamScore, points: homePoints, team: 'home' });
+            lastScoringTeam = 'home';
+        } else if ((event.etype === 1 || event.etype === 3) && awayPoints > 0) {
+            awayTeamQueue.push({ score: awayTeamScore, points: awayPoints, team: 'away' });
+            lastScoringTeam = 'away';
+        }
+
+        // If there is a change in possession, clear the queue of the team that just lost the ball
+        if ((event.etype === 4 || event.etype === 5 || event.etype === 10) && lastScoringTeam) {
+            if (lastScoringTeam === 'home' && event.team === 'away') {
+                awayTeamQueue = []; // Reset away team queue since they now have possession
+            } else if (lastScoringTeam === 'away' && event.team === 'home') {
+                homeTeamQueue = []; // Reset home team queue since they now have possession
+            }
+        }
+
+        // Calculate the MAMBA momentum after each event
+        // event.homeTeamMomentum = calculateMAMBAForTeam(homeTeamQueue);
+        //event.awayTeamMomentum = calculateMAMBAForTeam(awayTeamQueue);
+        event.totalMomentum = calculateMAMBAForTeam(homeTeamQueue) - calculateMAMBAForTeam(awayTeamQueue)
+    });
+
+    console.log(new_gameData)
+    return new_gameData;
 }
 
-async function getPace(gameData) {
+async function getPace(year) {
     //Make API call to /api/pace/:year
     const res = await fetch(`/api/pace/${year}`);
     return await res.json();
 }
 
-function getMomentum(gameData, method) {
+function getMomentum(gameData, year, method) {
+
+    //let Madj = getPace(year)
+
     switch (method) {
         case "ScoreNormalizedMomentum":
             return ScoreNormalizedMomentum(gameData);
         case "PAPM":
             return PAPM(gameData);
         case "MAMBA":
-            return MAMBA(gameData);
+            return MAMBA(gameData, 1.0);
         default:
             return ScoreNormalizedMomentum(gameData);
     }
