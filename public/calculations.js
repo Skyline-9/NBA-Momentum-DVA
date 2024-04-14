@@ -163,19 +163,30 @@ function MAMBA(gameData, MAdj, multiplier = 1.1) {
 
 
     // Helper function to calculate MAMBA for each team
-    function calculateMAMBAForTeam(events) {
+    function calculateMAMBAsForTeam(events) {
         let momentum = 0;
-        let mult = 0.5;
+        let mult = 1.1;
         events.forEach(event => {
             momentum += event.points * mult;
             mult *= 1.1; // Accumulating multiplier
         });
-        return momentum; // No need to divide by mult here as it is already factored in
+        return momentum; 
+    }
+
+    function calculateMAMBAeForTeam(events) {
+        let momentum = 0;
+        let mult = 1.1;
+        events.forEach(event => {
+            momentum += event.points * mult;
+            mult *= 1.1; // Accumulating multiplier
+        });
+        return momentum; 
     }
 
     let homeTeamQueue = [];
     let awayTeamQueue = [];
     let lastScoringTeam = null;
+
     console.log("calculating MAMBA")
     
     let new_gameData = JSON.parse(JSON.stringify(gameData));
@@ -212,7 +223,10 @@ function MAMBA(gameData, MAdj, multiplier = 1.1) {
         // Calculate the MAMBA momentum after each event
         // event.homeTeamMomentum = calculateMAMBAForTeam(homeTeamQueue);
         //event.awayTeamMomentum = calculateMAMBAForTeam(awayTeamQueue);
-        event.totalMomentum = calculateMAMBAForTeam(homeTeamQueue) - calculateMAMBAForTeam(awayTeamQueue)
+        event.MAMBAs = calculateMAMBAsForTeam(homeTeamQueue) - calculateMAMBAsForTeam(awayTeamQueue)
+        event.MAMBAe = 0 //may have to part event description to be able to calcuate stuff like this or find out 
+        // how to parse EVENTMSGACTIONTYPE
+        event.totalMAMBA = event.MAMBAs + event.MAMBAe
     });
 
     console.log(new_gameData)
@@ -227,6 +241,7 @@ async function getPace(year) {
 
 function getMomentum(gameData, year, method) {
 
+    // TOOD get pace data
     //let Madj = getPace(year)
 
     switch (method) {

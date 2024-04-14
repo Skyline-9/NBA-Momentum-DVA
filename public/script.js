@@ -315,7 +315,7 @@ function plotGameData(gid, year) {
 
         const line_MAMBA = d3.line()
             .x(d => x(d.t))
-            .y(d => y((d.totalMomentum)))
+            .y(d => y((d.totalMAMBA)))
 
         svg.append("g")
             .attr("id", "MAMBA")
