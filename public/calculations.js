@@ -229,7 +229,7 @@ function MAMBA(gameData, MAdj, multiplier = 1.1) {
         event.totalMAMBA = event.MAMBAs + event.MAMBAe
     });
 
-    console.log(new_gameData)
+    // console.log(new_gameData)
     return new_gameData;
 }
 

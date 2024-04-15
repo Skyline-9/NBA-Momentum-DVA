@@ -10,11 +10,16 @@
     <script type="text/javascript" src="lib/d3.v7.min.js"></script>
     <script type="module" src="calculations.js"></script>
     <script type="module" src="script.js"></script>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+
 </head>
 <body>
 <div class="intro">
     <h1>NBA GAME ANALYSIS</h1>
-    <p>Authors go here</p>
+    <p>by Richard Luo, Xian Hadia, Joaquin Garcia, Yuang Zhang, Zhining Zhang, Zhenyu Wu</p>
 </div>
 
 <div class="graph-area">
@@ -44,8 +49,62 @@
     </div>
 </div>
 
-<div class="description">
-    <p>This is a quick description of the momentum stats to make us look cool</p>
+<div class="description" style="text-align: center;">
+    <p>NBA Game Analysis is a data analysis and visualization tool used to view NBA basketball games and advanced statistics. Here is a brief description of each advanced statistic plotted.</p>
+    
+    <ol style="text-align: center; display: inline-block; margin-left: 0; padding-left: 20px;">
+        <!-- Score-normalized time -->
+        <li>
+            <p style="text-align: center;"><strong>Score-normalized time:</strong> This represents the last 5 scoring events. We calculate momentum based on the duration for a team to score its last 5 buckets, adjusted for the total points earned. This emphasizes the value of higher quality possessions.<br><br>
+            <span id="formula">
+              \( \text{Time}_{\text{normalized}} = \sum_{i \in \text{Last 5}} \frac{t_i - t_{i-1}}{p_i} \)
+            </span><br><br>
+            In the formula, \( p_i \) represents the points scored at the scoring event and \( t_i \) represents the time of the scoring event. The time for the previous event, \( t_{i-1} \), is 0 at the start of quarters.
+            </p>
+        </li>
+
+        <!-- PAPM -->
+        <li>
+            <p style="text-align: center;"><strong>Pace-adjusted plus/minus (PAPM):</strong> This measures a team's efficiency in a given timeframe. It evaluates a team's momentum by considering points scored against points given up, adjusted for the team's pace relative to the league average. This approach aims to equitably evaluate teams with different paces, focusing on their efficiency rather than their speed of play. Luck is not factored into this statistic as it can be a significant factor in small runs. The pace adjustment formula, inspired by ESPN's J. Hollinger, is given by:
+            </p>
+            <p id="formula">
+              \( M_{\text{adj}} = \frac{M_{\text{league}}}{M_{\text{team}}} \cdot M \)
+            </p>
+            <p>
+              where \( M \) is the pace of the player/lineup/team, \( M_{\text{league}} \) is the league's pace, and \( M_{\text{team}} \) is the team's pace. The PAPM is then calculated as:
+            </p>
+            <p id="formula">
+              \( \text{PAPM} = \frac{1}{M_{\text{adj}}} \cdot (\text{Points scored} - \text{Points given up}) \)
+            </p>
+        </li>
+
+        <!-- MAMBA -->
+        <li>
+            <p style="text-align: center;"><strong>MAMBA (Momentum Assessment Metric for Basketball Analysis):</strong> This is an aggregate momentum metric. It is derived by enhancing an explosiveness equation to capture momentum from consecutive points, particularly following dunks. The \( p_{\text{run}} \) variable includes a multiplier for consecutive scoring without an opponent's response:
+            </p>
+            <p id="formula">
+              \( p_{\text{run}} = 1.1 \times \text{multi} \times p \)
+            </p>
+            <p>
+              where \( p \) is the points scored in a single event, and \( \text{multi} \) is an accumulating multiplier. The scoring momentum \( MAMBA_s \) for a three-minute window is calculated as:
+            </p>
+            <p id="formula">
+              \( MAMBA_s = \frac{1}{M_{\text{adj}}} \left( \sum p_{\text{run}}^a - \sum p_{\text{run}}^b \right) \)
+            </p>
+            <p>
+              with \( p^a \) and \( p^b \) indicating points by teams a and b, respectively, and \( M_{\text{adj}} \) as the pace adjustment factor. Scoring efficiency \( MAMBA_e \) considers shots, steals, blocks, and offensive rebounds:
+            </p>
+            <p id="formula">
+              \( MAMBA_e = \frac{\text{shots}_{\text{made}} + 0.5 \times \text{steals} + 0.5 \times \text{blocks} + 0.5 \times \text{OReb}}{\text{shots}_{\text{attempted}}} \)
+            </p>
+            <p>
+              The final MAMBA score combines these two components:
+            </p>
+            <p id="formula">
+              \( MAMBA = MAMBA_s + MAMBA_e \)
+            </p>
+        </li>
+    </ol>
 </div>
 
 </body>

@@ -35,7 +35,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+    // initCheckboxes();
 });
+
 
 // Function to display games data
 function displayGames(gamesData, year) {
@@ -233,7 +235,7 @@ function plotGameData(gid, year) {
 
         const y = d3.scaleLinear()
             //.domain([-20, 20])
-            .domain([-maxScoreDiff * 5, maxScoreDiff * 5])
+            .domain([-maxScoreDiff * 1.15, maxScoreDiff * 1.15])
             .range([height - margin.bottom, margin.top])
 
         const line_score_diff = d3.line()
@@ -313,9 +315,10 @@ function plotGameData(gid, year) {
         let momentum2 = getMomentum(game_data, year, "MAMBA")
         momentum2.pop()
 
+        var maxMomentum2 = d3.max(momentum2, d => Math.abs(d.totalMAMBA))
         const line_MAMBA = d3.line()
             .x(d => x(d.t))
-            .y(d => y((d.totalMAMBA)))
+            .y(d => y((d.totalMAMBA / maxMomentum2)*maxScoreDiff))
 
         svg.append("g")
             .attr("id", "MAMBA")
