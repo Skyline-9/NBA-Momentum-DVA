@@ -35,9 +35,68 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
-    // initCheckboxes();
+    initCheckboxes();
 });
 
+
+var eventypes = [{type: 1, label: "Made Shot"}, {type: 2, label: "Missed Shot"}, {type: 3, label: "Free Throw"}, // the score will tell if it was made or not
+            {type: 4, label: "Rebound"}, {type: 5, label: "Turnover"}, {
+                type: 6,
+                label: "Foul"
+            }, //{type: 7, label: "Violation"},
+            {type: 8, label: "Substitution"}, {type: 9, label: "Timeout"}, //{type: 10, label: "Jumpball"},
+            {type: 11, label: "Ejection"}, //{type: 12, label: "Period Begin"},
+            //{type: 13, label: "Period End"},
+            //{type: 14, lable: "Hello"}
+        ]
+let svg
+
+function checkboxChange(checkbox, game_data, mouseOver, mouseOut, x, y, accent) {
+    let selectedEventTypes = eventypes.filter(function (d, i) {
+        return document.querySelectorAll("#checkbox input[type='checkbox']")[i].checked;
+    }).map(function (d) {
+        return d.type;
+    });
+
+    const event_data = game_data.filter(d => selectedEventTypes.includes(d.etype))
+
+    let circles = svg.selectAll("circle").data(event_data);
+
+    // Exit pattern: remove circles that no longer match the filtered data
+    circles.exit().remove();
+
+    circles.attr("cx", d => x(d.t))
+        .attr("cy", d => y(d.score_diff))
+        .attr("r", 5)
+        .attr("fill", d => accent(d.etype))
+        .on("mouseover", mouseOver)
+        .on("mouseout", mouseOut);
+
+
+    circles.enter()
+        .append("circle")
+        .attr("cx", d => x(d.t))
+        .attr("cy", d => y(d.score_diff))
+        .attr("r", 5)
+        .attr("fill", d => accent(d.etype))
+        .on("mouseover", mouseOver)
+        .on("mouseout", mouseOut);
+}
+
+function initCheckboxes() {
+    const checkboxes = document.querySelectorAll("#checkbox input[type='checkbox']");
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', checkboxChange);
+    });
+}
+
+function resetCheckboxes() {
+    // Reset the checkboxes state here if needed
+    const checkboxes = document.querySelectorAll("#checkbox input[type='checkbox']");
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false; // Uncheck all checkboxes
+    });
+}
 
 // Function to display games data
 function displayGames(gamesData, year) {
@@ -58,6 +117,8 @@ function displayGames(gamesData, year) {
     gameSelectLoadMessage.style.display = 'none'; // Hide loading message
 
     gameSelect.onchange = function () {
+
+        console.log("changing game")
         document.getElementById('plotSkeleton').style.display = 'block'; // Show the skeleton loader
         document.getElementById("graph-card").style.display = "none";
 
@@ -66,11 +127,15 @@ function displayGames(gamesData, year) {
             // Prepare the plot area for the new plot
             const plotArea = document.getElementById('plotArea');
             plotArea.innerHTML = ''; // Clear previous plot
-            plotGameData(selectedGameID, year); // Use selected gameID and year
+            resetCheckboxes(); // Clear the checkboxes state
+            plotGameData(this.value, year); // Use selected gameID and year
+            //plotGameData(selectedGameID, year); // Use selected gameID and year
         }
+        //initCheckboxes();
+        // game_data = []; // Assuming game_data is defined in the wider scope
+        
     };
 }
-
 function plotGameData(gid, year) {
     console.log(gid)
     console.log(year)
@@ -81,7 +146,7 @@ function plotGameData(gid, year) {
         const height = 750;
         const width = 1250;
 
-        const svg = d3.select("#plotArea").append("svg")
+        svg = d3.select("#plotArea").append("svg")
             .attr("id", "nba-plot")
             .attr("width", width)
             .attr("height", height);
@@ -99,16 +164,7 @@ function plotGameData(gid, year) {
             label: "OT10"
         },];
 
-        var eventypes = [{type: 1, label: "Made Shot"}, {type: 2, label: "Missed Shot"}, {type: 3, label: "Free Throw"}, // the score will tell if it was made or not
-            {type: 4, label: "Rebound"}, {type: 5, label: "Turnover"}, {
-                type: 6,
-                label: "Foul"
-            }, //{type: 7, label: "Violation"},
-            {type: 8, label: "Substitution"}, {type: 9, label: "Timeout"}, //{type: 10, label: "Jumpball"},
-            {type: 11, label: "Ejection"}, //{type: 12, label: "Period Begin"},
-            //{type: 13, label: "Period End"},
-            //{type: 14, lable: "Hello"}
-        ]
+        
 
         function getElapsed(per, clock) {
             let RegPeriod = 60 * 12
@@ -420,10 +476,28 @@ function plotGameData(gid, year) {
             return self.indexOf(d) === i;
         })
 
+
         var accent = d3.scaleOrdinal()
             .domain(types)
             .range(d3.schemeCategory10)
+        
+         
+        let toggles = d3.select("#checkbox").selectAll("input[type='checkbox']")
+            .data(eventypes)
+            .join(
+                enter => enter.append("input")
+                    .attr("type", "checkbox")
+                    .property("checked", false)
+                    .on("change", function() { checkboxChange(this, game_data, mouseOver, mouseOut, x, y, accent); }),
+                    
+            
+                update => update
+                    .property("checked", false)
+                    .on("change", function() { checkboxChange(this, game_data, mouseOver, mouseOut, x, y, accent); }),
+                exit => exit.remove()
+            );
 
+       /*
         const toggles = d3.select("#checkbox")
             .selectAll("label")
             .data(eventypes)
@@ -435,41 +509,8 @@ function plotGameData(gid, year) {
             .attr("type", "checkbox")
             .property("checked", false)
             .property("value", d => d.type)
-            .on("change", checkboxChange);
-
-
-        function checkboxChange() {
-            selectedEventTypes = eventypes.filter(function (d, i) {
-                return toggles.nodes()[i].checked;
-            }).map(function (d) {
-                return d.type
-            })
-
-            const event_data = game_data.filter(d => selectedEventTypes.includes(d.etype))
-
-            let circles = svg.selectAll("circle").data(event_data);
-
-            // Exit pattern: remove circles that no longer match the filtered data
-            circles.exit().remove();
-
-            circles.attr("cx", d => x(d.t))
-                .attr("cy", d => y(d.score_diff))
-                .attr("r", 5)
-                .attr("fill", d => accent(d.etype))
-                .on("mouseover", mouseOver)
-                .on("mouseout", mouseOut);
-
-
-            circles.enter()
-                .append("circle")
-                .attr("cx", d => x(d.t))
-                .attr("cy", d => y(d.score_diff))
-                .attr("r", 5)
-                .attr("fill", d => accent(d.etype))
-                .on("mouseover", mouseOver)
-                .on("mouseout", mouseOut);
-        }
-
+            .on("change", function() { checkboxChange(toggles, game_data, mouseOver, mouseOut, x, y, accent); });
+        */
 
         document.getElementById("graph-card").style.display = "block";
         document.getElementById('plotSkeleton').style.display = 'none'; // Hide the skeleton loader

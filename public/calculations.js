@@ -186,8 +186,6 @@ function MAMBA(gameData, MAdj, multiplier = 1.1) {
     let homeTeamQueue = [];
     let awayTeamQueue = [];
     let lastScoringTeam = null;
-
-    console.log("calculating MAMBA")
     
     let new_gameData = JSON.parse(JSON.stringify(gameData));
 
