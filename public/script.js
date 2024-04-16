@@ -193,7 +193,11 @@ function plotGameData(gid, year) {
                 time_left: d.PCTIMESTRING,
                 period: +d.PERIOD,
                 etype: +d.EVENTMSGTYPE,
-                description: d.HOMEDESCRIPTION + d.NEUTRALDESCRIPTION + d.VISITORDESCRIPTION
+                description: d.HOMEDESCRIPTION + d.NEUTRALDESCRIPTION + d.VISITORDESCRIPTION,
+                player1_team: d.PLAYER1_TEAM_NICKNAME,
+                player2_team: d.PLAYER2_TEAM_NICKNAME,
+                player3_team: d.PLAYER3_TEAM_NICKNAME,
+                emsg: d.EVENTMSGACTIONTYPE
             }
         });
 
