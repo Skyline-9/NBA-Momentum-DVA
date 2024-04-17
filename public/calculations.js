@@ -112,51 +112,40 @@ function ScoreNormalizedMomentum(gameData, interval=10, scaling=60) {
     return new_gameData
 }
 
-function PAPM(gameData, homeTeam, awayTeam) {
-    const relevantPaceData = {};
-    getPace(gameData).then(pace => {
-        relevantPaceData["league"] = pace["League Average"];
-        relevantPaceData["homeTeam"] = pace[TEAM_TO_FULL_NAME[homeTeam]];
-        relevantPaceData["awayTeam"] = pace[TEAM_TO_FULL_NAME[awayTeam]];
-    }).catch(err => {
-        console.error(err);
+
+function PAPM(gameData, Madj, windowSize = 180) {
+    let new_gameData = JSON.parse(JSON.stringify(gameData));
+
+    new_gameData.forEach((event, index) => {
+        if (!event.score) return;
+
+        const homeTeamScore = parseInt(event.score.split('-')[1], 10);
+        const awayTeamScore = parseInt(event.score.split('-')[0], 10);
+        const eventTime = event.t;
+
+        // Find the index of the event 3 minutes (180 seconds) ago
+        let prevIndex = index;
+        while (prevIndex > 0 && eventTime - new_gameData[prevIndex - 1].t <= windowSize) {
+            prevIndex--;
+        }
+
+        // Calculate points scored and points given up within the 3-minute window
+        let pointsScored, pointsGivenUp;
+        if (prevIndex === 0) {
+            pointsScored = homeTeamScore;
+            pointsGivenUp = awayTeamScore;
+        } else {
+            const prevHomeScore = parseInt(new_gameData[prevIndex].score.split('-')[1], 10);
+            const prevAwayScore = parseInt(new_gameData[prevIndex].score.split('-')[0], 10);
+            pointsScored = homeTeamScore - prevHomeScore;
+            pointsGivenUp = awayTeamScore - prevAwayScore;
+        }
+
+        // Calculate PAPM
+        event.PAPM = (1 / Madj) * (pointsScored - pointsGivenUp);
     });
-    console.log(relevantPaceData);
 
-    let currentPeriod = 0;
-    let windowEvents = [];
-    let homePaceAdjusted = relevantPaceData["homeTeam"] / relevantPaceData["league"];
-    let awayPaceAdjusted = relevantPaceData["awayTeam"] / relevantPaceData["league"];
-
-    // Iterate over the gameData to calculate PAPM for each event
-    for (let event of gameData) {
-        const [homeScore, awayScore] = event.score.split('-').map(Number);
-
-        if (event.period !== currentPeriod) {
-            // When the period changes, reset windowEvents
-            currentPeriod = event.period;
-            windowEvents = [];
-        }
-
-        // Add current event to the window
-        windowEvents.push({ time: event.t, homeScore, awayScore });
-
-        // Remove events outside the window (3-minute window)
-        while (windowEvents.length > 0 && event.t - windowEvents[0].time > 180) {
-            windowEvents.shift();
-        }
-
-        const windowStart = windowEvents[0];
-        const windowEnd = windowEvents[windowEvents.length - 1];
-        const pointsScored = windowEnd.homeScore - windowStart.homeScore;
-        const pointsGivenUp = windowEnd.awayScore - windowStart.awayScore;
-
-        // Calculate PAPM for home and away teams
-        event.homePAPM = (1 / homePaceAdjusted) * (pointsScored - pointsGivenUp);
-        event.awayPAPM = (1 / awayPaceAdjusted) * (pointsGivenUp - pointsScored);
-    }
-
-    return gameData;
+    return new_gameData;
 }
 
 function MAMBA(gameData, MAdj, multiplier = 1.1) {
@@ -246,7 +235,7 @@ function getMomentum(gameData, year, method) {
         case "ScoreNormalizedMomentum":
             return ScoreNormalizedMomentum(gameData);
         case "PAPM":
-            return PAPM(gameData);
+            return PAPM(gameData, 1.0);
         case "MAMBA":
             return MAMBA(gameData, 1.0);
         default:
