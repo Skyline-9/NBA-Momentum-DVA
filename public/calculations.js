@@ -164,15 +164,6 @@ function MAMBA(gameData, MAdj, multiplier = 1.1) {
     function calculateMAMBAeForTeam(events) {
         let teamStats = {};
 
-        // if (events.etype === 1 && events.player1_team) {
-        //     if (!teamStats[events.player1_team]) {
-        //         teamStats[events.player1_team] = [];
-        //         teamStats[events.player1_team].append({shotsMade: 0, shotsAttempted: 0, steals: 0, blocks: 0, OReb: 0})
-        //     }
-        //     teamStats[events.player1_team].shotsMade++;
-        //     teamStats[events.player1_team].shotsAttempted++;
-        // }
-
         events.forEach((event, i) => {
             if (event.player1_team && !teamStats[event.player1_team]) {
                 teamStats[event.player1_team] = [];
@@ -186,54 +177,73 @@ function MAMBA(gameData, MAdj, multiplier = 1.1) {
                 teamStats[event.player3_team] = [];
             }
 
-            // let stats = {shotsMade: 0, shotsAttempted: 0, steals: 0, blocks: 0, OReb: 0, time_left: event.time_left, period: event.period};
-            // shot
+            function getLastStats(team) {
+                if (teamStats[team].length > 0) {
+                    return {...teamStats[team][teamStats[team].length - 1]};
+                }
+                return {shotsMade: 0, shotsAttempted: 0, steals: 0, blocks: 0, OReb: 0, time: event.t};
+            }
+
             if (event.etype === 1 && event.player1_team) {
+                let lastStats = getLastStats(event.player1_team);
                 let stats = {
-                    shotsMade: 1,
-                    shotsAttempted: 1,
-                    steals: 0,
-                    blocks: 0,
-                    OReb: 0,
+                    shotsMade: lastStats.shotsMade + 1,
+                    shotsAttempted: lastStats.shotsAttempted + 1,
+                    steals: lastStats.steals,
+                    blocks: lastStats.blocks,
+                    OReb: lastStats.OReb,
                     time: event.t
                 };
                 teamStats[event.player1_team].push(stats);
             }
             if (event.etype === 5 && (event.emsg === "1" || event.emsg === "2") && event.player2_team) {
+                let lastStats = getLastStats(event.player2_team);
                 let stats = {
-                    shotsMade: 0,
-                    shotsAttempted: 0,
-                    steals: 1,
-                    blocks: 0,
-                    OReb: 0,
+                    shotsMade: lastStats.shotsMade,
+                    shotsAttempted: lastStats.shotsAttempted,
+                    steals: lastStats.steals + 1,
+                    blocks: lastStats.blocks,
+                    OReb: lastStats.OReb,
                     time: event.t
                 };
                 teamStats[event.player2_team].push(stats);
             }
             if (event.etype === 2 && event.player3_team) {
+                let lastStats = getLastStats(event.player3_team);
                 let stats = {
-                    shotsMade: 0,
-                    shotsAttempted: 1,
-                    steals: 0,
-                    blocks: 1,
-                    OReb: 0,
+                    shotsMade: lastStats.shotsMade,
+                    shotsAttempted: lastStats.shotsAttempted + 1,
+                    steals: lastStats.steals,
+                    blocks: lastStats.blocks + 1,
+                    OReb: lastStats.OReb,
                     time: event.t
                 };
                 teamStats[event.player3_team].push(stats);
             }
 
             if (i > 0 && event.etype === 4 && event.player1_team && events[i-1].etype === 2 && events[i-1].player1_team === event.player1_team) {
+                let lastStats = getLastStats(event.player1_team);
                 let stats = {
-                    shotsMade: 0,
-                    shotsAttempted: 1,
-                    steals: 0,
-                    blocks: 1,
-                    OReb: 1,
+                    shotsMade: lastStats.shotsMade,
+                    shotsAttempted: lastStats.shotsAttempted,
+                    steals: lastStats.steals,
+                    blocks: lastStats.blocks + 1,
+                    OReb: lastStats.OReb + 1,
                     time: event.t
                 };
                 teamStats[event.player1_team].push(stats);
             }
         });
+        
+        const maxInterval = 180;
+        const eventsInInterval = [];
+        const homeTeamMambaE = [];
+
+        for (team in teamStats) {
+            for (stats in teamStats[team]) {
+
+            }
+        }
 
         let MAMBAe = (shotsMade + 0.5 * (steals + blocks + OReb)) / shotsAttempted;
         return MAMBAe;
