@@ -129,6 +129,7 @@ function displayGames(gamesData, year) {
             plotArea.innerHTML = ''; // Clear previous plot
             resetCheckboxes(); // Clear the checkboxes state
             plotGameData(this.value, year); // Use selected gameID and year
+            initMomentumSelector();
             //plotGameData(selectedGameID, year); // Use selected gameID and year
         }
         //initCheckboxes();
@@ -136,6 +137,65 @@ function displayGames(gamesData, year) {
 
     };
 }
+
+function initMomentumSelector() {
+    const momentumContainer = document.getElementById('momentumSelectContainer');
+    momentumContainer.style.display = 'block'; // Show momentum select container
+
+    const momentumSelect = document.getElementById('momentumSelect');
+    momentumSelect.innerHTML = ''; // Clear previous options
+
+    const momentumTypes = [
+        { value: '', text: '--Select Momentum Type--' }, // default no selection
+        { value: 'ScoreNormalizedMomentum', text: 'Score Normalized Momentum' },
+        { value: 'MAMBA', text: 'MAMBA' },
+        { value: 'PAPM', text: 'PAPM' },
+        { value: 'MAMBA', text: 'MAMBA' },
+        { value: 'all momentum', text: 'ALL Momentum'},
+    ];
+
+    momentumTypes.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type.value;
+        option.textContent = type.text;
+        momentumSelect.appendChild(option);
+    });
+
+    momentumSelect.onchange = function () {
+        updateMomentumVisualization(this.value);
+    };
+}
+
+function updateMomentumVisualization(selectedMomentumType) {
+    const momentumSelectors = {
+        'ScoreNormalizedMomentum': ['#homeMomentum', '#awayMomentum'],
+        'MAMBA': ['#MAMBA'],
+        'PAPM': ['#PAPM']
+    };
+
+    // Hide all momentum visualizations first
+    Object.keys(momentumSelectors).forEach(type => {
+        momentumSelectors[type].forEach(selector => {
+            d3.select(selector).style('display', 'none');
+        });
+    });
+
+    if (selectedMomentumType === 'all momentum') {
+        // Show all momentum visualizations
+        Object.keys(momentumSelectors).forEach(type => {
+            momentumSelectors[type].forEach(selector => {
+                d3.select(selector).style('display', 'block');
+            });
+        });
+    } else if (selectedMomentumType !== '') {
+        // Show only the selected momentum visualization
+        momentumSelectors[selectedMomentumType].forEach(selector => {
+            d3.select(selector).style('display', 'block');
+        });
+    }
+    // If selectedMomentumType === '', do nothing (all are hidden)
+}
+
 function plotGameData(gid, year) {
     console.log(gid)
     console.log(year)
@@ -371,7 +431,6 @@ function plotGameData(gid, year) {
             .attr("d", line_away)
 
 
-
         let momentum2 = getMomentum(game_data, year, "MAMBA")
         momentum2.pop()
 
@@ -390,7 +449,6 @@ function plotGameData(gid, year) {
             .attr("d", line_MAMBA);
 
 
-            
         let momentum3 = getMomentum(game_data, year, "PAPM");
         momentum3.pop();
 
