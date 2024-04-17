@@ -12,6 +12,7 @@ const TEAM_TO_FULL_NAME = {
     "mavericks": "Dallas Mavericks",
     "rockets": "Houston Rockets",
     "grizzlies": "Memphis Grizzlies",
+    "vancouver": "Vancouver Grizzlies",
     "pelicans": "New Orleans Pelicans",
     "spurs": "San Antonio Spurs",
     "nuggets": "Denver Nuggets",
@@ -22,7 +23,9 @@ const TEAM_TO_FULL_NAME = {
     "hawks": "Atlanta Hawks",
     "celtics": "Boston Celtics",
     "nets": "Brooklyn Nets",
+    "jerseys": "New Jersey Nets",
     "hornets": "Charlotte Hornets",
+    "bobcats": "Charlotte Bobcats",
     "bulls": "Chicago Bulls",
     "cavaliers": "Cleveland Cavaliers",
     "pistons": "Detroit Pistons",
@@ -33,7 +36,8 @@ const TEAM_TO_FULL_NAME = {
     "magic": "Orlando Magic",
     "sixers": "Philadelphia 76ers",
     "raptors": "Toronto Raptors",
-    "wizards": "Washington Wizards"
+    "wizards": "Washington Wizards",
+    "supersonics": "Seattle SuperSonics",
 };
 
 function ScoreNormalizedMomentum(gameData, interval = 10, scaling = 60) {
@@ -110,9 +114,14 @@ function ScoreNormalizedMomentum(gameData, interval = 10, scaling = 60) {
     return new_gameData
 }
 
-
-function PAPM(gameData, Madj, windowSize = 180) {
+function PAPM(gameData, paceData, homeTeam, awayTeam, windowSize = 180) {
     let new_gameData = JSON.parse(JSON.stringify(gameData));
+
+    const leaguePace = paceData["League Average"];
+    const homePace = paceData[TEAM_TO_FULL_NAME[homeTeam]];
+    const awayPace = paceData[TEAM_TO_FULL_NAME[awayTeam]];
+
+    const Madj = leaguePace / (0.5 * homePace + 0.5 * awayPace);
 
     new_gameData.forEach((event, index) => {
         if (!event.score) return;
@@ -153,7 +162,13 @@ function convertToSeconds(timeStr) {
     return minutes * 60 + seconds; // Calculate total seconds
 }
 
-function MAMBA(gameData, MAdj, multiplier = 1.1) {
+function MAMBA(gameData, MAdj, multiplier = 1.1, homeTeam, awayTeam) {
+    const leaguePace = paceData["League Average"];
+    const homePace = paceData[TEAM_TO_FULL_NAME[homeTeam]];
+    const awayPace = paceData[TEAM_TO_FULL_NAME[awayTeam]];
+
+    const MadjHome = leaguePace / homePace;
+    const MadjAway = leaguePace / awayPace;
 
     // Helper function to calculate MAMBA for each team
     function calculateMAMBAsForTeam(teamQueue, team) {
@@ -260,15 +275,41 @@ function MAMBA(gameData, MAdj, multiplier = 1.1) {
         const maxInterval = 180;
         const eventsInInterval = [];
         const homeTeamMambaE = [];
+        const awayTeamMambaE = [];
 
-        for (team in teamStats) {
-            for (stats in teamStats[team]) {
-                // leave for complete
+        // Loop over teamStats
+        for (let team in teamStats) {
+            for (let stats in team) {
+                // Check if the event is within the window
+                if (stats.time - eventsInInterval < maxInterval) {
+                    eventsInInterval.push(stats);
+                } else {
+                    // Remove events from eventsInInterval until they match the window
+                    // Check to make sure eventsInInterval is not empty
+                    while (eventsInInterval.length > 0 && stats.time - eventsInInterval[0].time > maxInterval) {
+                        eventsInInterval.shift();
+                    }
+                }
+
+                // Calculate differences in stats
+                const shotsMade = stats.shotsMade - eventsInInterval[0].shotsMade;
+                const shotsAttempted = stats.shotsAttempted - eventsInInterval[0].shotsAttempted;
+                const steals = stats.steals - eventsInInterval[0].steals;
+                const blocks = stats.blocks - eventsInInterval[0].blocks;
+                const OReb = stats.OReb - eventsInInterval[0].OReb;
+
+                // Calculate MAMBAe
+                const MAMBAe = (shotsMade + 0.5 * steals + 0.5 * blocks + 0.5 * OReb) / shotsAttempted;
+                if (team.toLowerCase() === homeTeam) {
+                    homeTeamMambaE.push([MAMBAe, stats.time]);
+                }
+                else {
+                    awayTeamMambaE.push([MAMBAe, stats.time]);
+                }
             }
         }
 
-        let MAMBAe = (shotsMade + 0.5 * (steals + blocks + OReb)) / shotsAttempted;
-        return MAMBAe;
+        return [homeTeamMambaE, awayTeamMambaE];
     }
 
 
@@ -285,8 +326,8 @@ function MAMBA(gameData, MAdj, multiplier = 1.1) {
 
     new_gameData.forEach(event => {
         if (!event.score) return;
+
         let time_elapsed = convertToSeconds(event.time_left) // in minuts
-        console.log(time_elapsed)
 
         // Parse the current scores from the event
         const homeTeamScore = parseInt(event.score.split('-')[1], 10);
@@ -306,12 +347,8 @@ function MAMBA(gameData, MAdj, multiplier = 1.1) {
         }
 
         // Calculate the MAMBA momentum after each event
-        // event.homeTeamMomentum = calculateMAMBAForTeam(homeTeamQueue);
-        //event.awayTeamMomentum = calculateMAMBAForTeam(awayTeamQueue);
-        event.MAMBAs = (calculateMAMBAsForTeam(homeTeamQueue, 'home', multiplier) - calculateMAMBAsForTeam(awayTeamQueue, 'away', multiplier))
-        // event.home_MAMBAe = calculateMAMBAeForTeam(homeTeamQueue) //may have to part event description to be able to calcuate stuff like this or find out
-        // event.away_MAMBAe = calculateMAMBAeForTeam(awayTeamQueue)
-        // how to parse EVENTMSGACTIONTYPE
+        event.MAMBAs = (calculateMAMBAsForTeam(homeTeamQueue, 'home', multiplier) - calculateMAMBAsForTeam(awayTeamQueue, 'away', multiplier));
+        calculateMAMBAeForTeam(new_gameData);
         event.totalMAMBA = event.MAMBAs
     });
 
@@ -322,21 +359,42 @@ function MAMBA(gameData, MAdj, multiplier = 1.1) {
 async function getPace(year) {
     //Make API call to /api/pace/:year
     const res = await fetch(`/api/pace/${year}`);
-    return await res.json();
+    return res.json();
 }
 
-function getMomentum(gameData, year, method) {
-    // TOOD get pace data
-    let Madj = getPace(year);
-    console.log(Madj);
+async function getMomentum(gameData, year, method, homeTeam, awayTeam) {
+    const paceData = await getPace(year);
+
+    homeTeam = homeTeam.toLowerCase();
+    awayTeam = awayTeam.toLowerCase();
+
+    // Grizzlies move from Vancouver to Memphis
+    if(year <= 2001) {
+        if(homeTeam === "grizzlies") homeTeam = "vancouver";
+        if(awayTeam === "grizzlies") awayTeam = "vancouver";
+    }
+
+    // Nets move from New Jersey to Brooklyn
+    if(year >= 2012) {
+        if(homeTeam === "nets") homeTeam = "jerseys";
+        if(awayTeam === "nets") awayTeam = "jerseys";
+    }
+
+    // Bobcats change name to Hornets
+    if(year >= 2014) {
+        if(homeTeam === "hornets") homeTeam = "bobcats";
+        if(awayTeam === "hornets") awayTeam = "bobcats";
+    }
+
+    console.log(paceData);
 
     switch (method) {
         case "ScoreNormalizedMomentum":
             return ScoreNormalizedMomentum(gameData);
         case "PAPM":
-            return PAPM(gameData, Madj);
+            return PAPM(gameData, paceData, homeTeam, awayTeam);
         case "MAMBA":
-            return MAMBA(gameData, Madj);
+            return MAMBA(gameData, paceData, homeTeam, awayTeam);
         default:
             return ScoreNormalizedMomentum(gameData);
     }
