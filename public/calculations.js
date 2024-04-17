@@ -36,24 +36,22 @@ const TEAM_TO_FULL_NAME = {
     "wizards": "Washington Wizards"
 };
 
-function ScoreNormalizedMomentum(gameData, interval=10, scaling=60) {
+function ScoreNormalizedMomentum(gameData, interval = 10, scaling = 60) {
     // if use points/timeDiff, the value is higher, the momentum is higher
-    function calMomentum(teamQueue){
+    function calMomentum(teamQueue) {
         let sumNormalizedTime = 0;
         // calculate for 5 events
-        if (teamQueue.length < interval){
+        if (teamQueue.length < interval) {
             return 0;
         }
         // loop the queue
         for (let i = 1; i < teamQueue.length; i++) {
-            const scoreChange = teamQueue[i].score - teamQueue[i-1].score;
-            const timeDiff = teamQueue[i].time_s - teamQueue[i-1].time_s;
+            const scoreChange = teamQueue[i].score - teamQueue[i - 1].score;
+            const timeDiff = teamQueue[i].time_s - teamQueue[i - 1].time_s;
             // make sure that the time changed
             if (timeDiff !== 0) {
-
                 sumNormalizedTime += scaling * scoreChange / timeDiff;
-            }
-            else{
+            } else {
                 sumNormalizedTime += 0;
             }
         }
@@ -80,13 +78,13 @@ function ScoreNormalizedMomentum(gameData, interval=10, scaling=60) {
         const awayTeamScore = parseInt(event.score.split('-')[0]);
 
         // clear the data for each new period
-        if (event.period != cur_period){
+        if (event.period !== cur_period) {
             cur_period = event.period;
-            homeTeamQueue = [{ time_s: event.t, score: homeTeamScore }];
-            awayTeamQueue = [{ time_s: event.t, score: awayTeamScore }];
+            homeTeamQueue = [{time_s: event.t, score: homeTeamScore}];
+            awayTeamQueue = [{time_s: event.t, score: awayTeamScore}];
             homeTeamMomentum = 0;
             awayTeamMomentum = 0;
-        }else{
+        } else {
 
             homeTeamQueue.push({time_s: event.t, score: homeTeamScore});
             awayTeamQueue.push({time_s: event.t, score: awayTeamScore});
@@ -94,15 +92,15 @@ function ScoreNormalizedMomentum(gameData, interval=10, scaling=60) {
             // if the length >5, remove the oldest one
             if (homeTeamQueue.length > interval) {
                 homeTeamQueue.shift();
-            };
+            }
             homeTeamMomentum = calMomentum(homeTeamQueue);
 
             // if the length >5, remove the oldest one
             if (awayTeamQueue.length > interval) {
                 awayTeamQueue.shift();
-            };
+            }
             awayTeamMomentum = calMomentum(awayTeamQueue);
-        };
+        }
 
         // add 2 momentum to the object
         event.homeTeamMomentum = homeTeamMomentum;
@@ -157,127 +155,123 @@ function convertToSeconds(timeStr) {
 
 function MAMBA(gameData, MAdj, multiplier = 1.1) {
 
-        // Helper function to calculate MAMBA for each team
-        function calculateMAMBAsForTeam(teamQueue, team) {
-            let momentum = 0;
-            let mult = 1; // Start with a multiplier of 1
-            let windowStartIndex = 0; // Start of the 3-minute window
-            let lastScoringTeam = null; // Track the last team that scored
-    
-            
+    // Helper function to calculate MAMBA for each team
+    function calculateMAMBAsForTeam(teamQueue, team) {
+        let momentum = 0;
+        let mult = 1; // Start with a multiplier of 1
+        let windowStartIndex = 0; // Start of the 3-minute window
+        let lastScoringTeam = null; // Track the last team that scored
 
-            for (let i = 0; i < teamQueue.length; i++) {
-                let currentEvent = teamQueue[i];
-                
-                
-                // Check if the last scoring event was by the opposing team to reset the multiplier
-                if (lastScoringTeam && lastScoringTeam !== team) {
-                    mult = 1;
-                }
-    
-                // Calculate momentum for events within the window
-                if (currentEvent.dt % 3 == 0) {
-                    momentum += currentEvent.points * mult;
-                    mult *= multiplier; // Increase multiplier
-                }
-                
-                // Update last scoring team
-                lastScoringTeam = team;
+        for (let i = 0; i < teamQueue.length; i++) {
+            let currentEvent = teamQueue[i];
+
+            // Check if the last scoring event was by the opposing team to reset the multiplier
+            if (lastScoringTeam && lastScoringTeam !== team) {
+                mult = 1;
             }
-        
-            return momentum;
+
+            // Calculate momentum for events within the window
+            if (currentEvent.dt % 3 === 0) {
+                momentum += currentEvent.points * mult;
+                mult *= multiplier; // Increase multiplier
+            }
+
+            // Update last scoring team
+            lastScoringTeam = team;
         }
 
-        function calculateMAMBAeForTeam(events) {
-            let teamStats = {};
-    
-            events.forEach((event, i) => {
-                if (event.player1_team && !teamStats[event.player1_team]) {
-                    teamStats[event.player1_team] = [];
-                }
-    
-                if (event.player2_team && !teamStats[event.player2_team]) {
-                    teamStats[event.player2_team] = [];
-                }
-    
-                if (event.player3_team && !teamStats[event.player3_team]) {
-                    teamStats[event.player3_team] = [];
-                }
-    
-                function getLastStats(team) {
-                    if (teamStats[team].length > 0) {
-                        return {...teamStats[team][teamStats[team].length - 1]};
-                    }
-                    return {shotsMade: 0, shotsAttempted: 0, steals: 0, blocks: 0, OReb: 0, time: event.t};
-                }
-    
-                if (event.etype === 1 && event.player1_team) {
-                    let lastStats = getLastStats(event.player1_team);
-                    let stats = {
-                        shotsMade: lastStats.shotsMade + 1,
-                        shotsAttempted: lastStats.shotsAttempted + 1,
-                        steals: lastStats.steals,
-                        blocks: lastStats.blocks,
-                        OReb: lastStats.OReb,
-                        time: event.t
-                    };
-                    teamStats[event.player1_team].push(stats);
-                }
-                if (event.etype === 5 && (event.emsg === "1" || event.emsg === "2") && event.player2_team) {
-                    let lastStats = getLastStats(event.player2_team);
-                    let stats = {
-                        shotsMade: lastStats.shotsMade,
-                        shotsAttempted: lastStats.shotsAttempted,
-                        steals: lastStats.steals + 1,
-                        blocks: lastStats.blocks,
-                        OReb: lastStats.OReb,
-                        time: event.t
-                    };
-                    teamStats[event.player2_team].push(stats);
-                }
-                if (event.etype === 2 && event.player3_team) {
-                    let lastStats = getLastStats(event.player3_team);
-                    let stats = {
-                        shotsMade: lastStats.shotsMade,
-                        shotsAttempted: lastStats.shotsAttempted + 1,
-                        steals: lastStats.steals,
-                        blocks: lastStats.blocks + 1,
-                        OReb: lastStats.OReb,
-                        time: event.t
-                    };
-                    teamStats[event.player3_team].push(stats);
-                }
-    
-                if (i > 0 && event.etype === 4 && event.player1_team && events[i-1].etype === 2 && events[i-1].player1_team === event.player1_team) {
-                    let lastStats = getLastStats(event.player1_team);
-                    let stats = {
-                        shotsMade: lastStats.shotsMade,
-                        shotsAttempted: lastStats.shotsAttempted,
-                        steals: lastStats.steals,
-                        blocks: lastStats.blocks + 1,
-                        OReb: lastStats.OReb + 1,
-                        time: event.t
-                    };
-                    teamStats[event.player1_team].push(stats);
-                }
-            });
-            
-            const maxInterval = 180;
-            const eventsInInterval = [];
-            const homeTeamMambaE = [];
-    
-            for (team in teamStats) {
-                for (stats in teamStats[team]) {
-                    // leave for complete
-                }
-            }
-    
-            let MAMBAe = (shotsMade + 0.5 * (steals + blocks + OReb)) / shotsAttempted;
-            return MAMBAe;
-        }    
-            
+        return momentum;
+    }
 
-        
+    function calculateMAMBAeForTeam(events) {
+        let teamStats = {};
+
+        events.forEach((event, i) => {
+            if (event.player1_team && !teamStats[event.player1_team]) {
+                teamStats[event.player1_team] = [];
+            }
+
+            if (event.player2_team && !teamStats[event.player2_team]) {
+                teamStats[event.player2_team] = [];
+            }
+
+            if (event.player3_team && !teamStats[event.player3_team]) {
+                teamStats[event.player3_team] = [];
+            }
+
+            function getLastStats(team) {
+                if (teamStats[team].length > 0) {
+                    return {...teamStats[team][teamStats[team].length - 1]};
+                }
+                return {shotsMade: 0, shotsAttempted: 0, steals: 0, blocks: 0, OReb: 0, time: event.t};
+            }
+
+            if (event.etype === 1 && event.player1_team) {
+                let lastStats = getLastStats(event.player1_team);
+                let stats = {
+                    shotsMade: lastStats.shotsMade + 1,
+                    shotsAttempted: lastStats.shotsAttempted + 1,
+                    steals: lastStats.steals,
+                    blocks: lastStats.blocks,
+                    OReb: lastStats.OReb,
+                    time: event.t
+                };
+                teamStats[event.player1_team].push(stats);
+            }
+            if (event.etype === 5 && (event.emsg === "1" || event.emsg === "2") && event.player2_team) {
+                let lastStats = getLastStats(event.player2_team);
+                let stats = {
+                    shotsMade: lastStats.shotsMade,
+                    shotsAttempted: lastStats.shotsAttempted,
+                    steals: lastStats.steals + 1,
+                    blocks: lastStats.blocks,
+                    OReb: lastStats.OReb,
+                    time: event.t
+                };
+                teamStats[event.player2_team].push(stats);
+            }
+            if (event.etype === 2 && event.player3_team) {
+                let lastStats = getLastStats(event.player3_team);
+                let stats = {
+                    shotsMade: lastStats.shotsMade,
+                    shotsAttempted: lastStats.shotsAttempted + 1,
+                    steals: lastStats.steals,
+                    blocks: lastStats.blocks + 1,
+                    OReb: lastStats.OReb,
+                    time: event.t
+                };
+                teamStats[event.player3_team].push(stats);
+            }
+
+            if (i > 0 && event.etype === 4 && event.player1_team && events[i - 1].etype === 2 && events[i - 1].player1_team === event.player1_team) {
+                let lastStats = getLastStats(event.player1_team);
+                let stats = {
+                    shotsMade: lastStats.shotsMade,
+                    shotsAttempted: lastStats.shotsAttempted,
+                    steals: lastStats.steals,
+                    blocks: lastStats.blocks + 1,
+                    OReb: lastStats.OReb + 1,
+                    time: event.t
+                };
+                teamStats[event.player1_team].push(stats);
+            }
+        });
+
+        const maxInterval = 180;
+        const eventsInInterval = [];
+        const homeTeamMambaE = [];
+
+        for (team in teamStats) {
+            for (stats in teamStats[team]) {
+                // leave for complete
+            }
+        }
+
+        let MAMBAe = (shotsMade + 0.5 * (steals + blocks + OReb)) / shotsAttempted;
+        return MAMBAe;
+    }
+
+
     const maxInterval = 180;
     const eventsInInterval = [];
     const homeTeamMambaE = [];
@@ -286,7 +280,7 @@ function MAMBA(gameData, MAdj, multiplier = 1.1) {
     let homeTeamQueue = [];
     let awayTeamQueue = [];
     let lastScoringTeam = null;
-    
+
     let new_gameData = JSON.parse(JSON.stringify(gameData));
 
     new_gameData.forEach(event => {
@@ -304,18 +298,18 @@ function MAMBA(gameData, MAdj, multiplier = 1.1) {
 
         // Check if this is a scoring event for the home or away team
         if ((event.etype === 1 || event.etype === 3) && homePoints > 0) {
-            homeTeamQueue.push({ score: homeTeamScore, points: homePoints, team: 'home', dt: time_elapsed });
+            homeTeamQueue.push({score: homeTeamScore, points: homePoints, team: 'home', dt: time_elapsed});
             lastScoringTeam = 'home';
         } else if ((event.etype === 1 || event.etype === 3) && awayPoints > 0) {
-            awayTeamQueue.push({ score: awayTeamScore, points: awayPoints, team: 'away', dt: time_elapsed });
+            awayTeamQueue.push({score: awayTeamScore, points: awayPoints, team: 'away', dt: time_elapsed});
             lastScoringTeam = 'away';
         }
 
         // Calculate the MAMBA momentum after each event
         // event.homeTeamMomentum = calculateMAMBAForTeam(homeTeamQueue);
         //event.awayTeamMomentum = calculateMAMBAForTeam(awayTeamQueue);
-        event.MAMBAs = (calculateMAMBAsForTeam(homeTeamQueue, 'home', multiplier) - calculateMAMBAsForTeam(awayTeamQueue, 'away', multiplier)) 
-        // event.home_MAMBAe = calculateMAMBAeForTeam(homeTeamQueue) //may have to part event description to be able to calcuate stuff like this or find out 
+        event.MAMBAs = (calculateMAMBAsForTeam(homeTeamQueue, 'home', multiplier) - calculateMAMBAsForTeam(awayTeamQueue, 'away', multiplier))
+        // event.home_MAMBAe = calculateMAMBAeForTeam(homeTeamQueue) //may have to part event description to be able to calcuate stuff like this or find out
         // event.away_MAMBAe = calculateMAMBAeForTeam(awayTeamQueue)
         // how to parse EVENTMSGACTIONTYPE
         event.totalMAMBA = event.MAMBAs
@@ -332,16 +326,15 @@ async function getPace(year) {
 }
 
 function getMomentum(gameData, year, method) {
-
     // TOOD get pace data
-    let Madj = getPace(year)
-    console.log(Madj)
+    let Madj = getPace(year);
+    console.log(Madj);
 
     switch (method) {
         case "ScoreNormalizedMomentum":
             return ScoreNormalizedMomentum(gameData);
         case "PAPM":
-            return PAPM(gameData,Madj);
+            return PAPM(gameData, Madj);
         case "MAMBA":
             return MAMBA(gameData, Madj);
         default:
@@ -349,4 +342,4 @@ function getMomentum(gameData, year, method) {
     }
 }
 
-export { getMomentum };
+export {getMomentum};
