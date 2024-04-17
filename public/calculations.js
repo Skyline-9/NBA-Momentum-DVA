@@ -150,7 +150,6 @@ function PAPM(gameData, Madj, windowSize = 180) {
 
 function MAMBA(gameData, MAdj, multiplier = 1.1) {
 
-
     // Helper function to calculate MAMBA for each team
     function calculateMAMBAsForTeam(events) {
         let momentum = 0;
@@ -163,13 +162,82 @@ function MAMBA(gameData, MAdj, multiplier = 1.1) {
     }
 
     function calculateMAMBAeForTeam(events) {
-        let momentum = 0;
-        let mult = 1.1;
-        events.forEach(event => {
-            momentum += event.points * mult;
-            mult *= 1.1; // Accumulating multiplier
+        let teamStats = {};
+
+        // if (events.etype === 1 && events.player1_team) {
+        //     if (!teamStats[events.player1_team]) {
+        //         teamStats[events.player1_team] = [];
+        //         teamStats[events.player1_team].append({shotsMade: 0, shotsAttempted: 0, steals: 0, blocks: 0, OReb: 0})
+        //     }
+        //     teamStats[events.player1_team].shotsMade++;
+        //     teamStats[events.player1_team].shotsAttempted++;
+        // }
+
+        events.forEach((event, i) => {
+            if (event.player1_team && !teamStats[event.player1_team]) {
+                teamStats[event.player1_team] = [];
+            }
+
+            if (event.player2_team && !teamStats[event.player2_team]) {
+                teamStats[event.player2_team] = [];
+            }
+
+            if (event.player3_team && !teamStats[event.player3_team]) {
+                teamStats[event.player3_team] = [];
+            }
+
+            // let stats = {shotsMade: 0, shotsAttempted: 0, steals: 0, blocks: 0, OReb: 0, time_left: event.time_left, period: event.period};
+            // shot
+            if (event.etype === 1 && event.player1_team) {
+                let stats = {
+                    shotsMade: 1,
+                    shotsAttempted: 1,
+                    steals: 0,
+                    blocks: 0,
+                    OReb: 0,
+                    time: event.t
+                };
+                teamStats[event.player1_team].push(stats);
+            }
+            if (event.etype === 5 && (event.emsg === "1" || event.emsg === "2") && event.player2_team) {
+                let stats = {
+                    shotsMade: 0,
+                    shotsAttempted: 0,
+                    steals: 1,
+                    blocks: 0,
+                    OReb: 0,
+                    time: event.t
+                };
+                teamStats[event.player2_team].push(stats);
+            }
+            if (event.etype === 2 && event.player3_team) {
+                let stats = {
+                    shotsMade: 0,
+                    shotsAttempted: 1,
+                    steals: 0,
+                    blocks: 1,
+                    OReb: 0,
+                    time: event.t
+                };
+                teamStats[event.player3_team].push(stats);
+            }
+
+            if (i > 0 && event.etype === 4 && event.player1_team && events[i-1].etype === 2 && events[i-1].player1_team === event.player1_team) {
+                let stats = {
+                    shotsMade: 0,
+                    shotsAttempted: 1,
+                    steals: 0,
+                    blocks: 1,
+                    OReb: 1,
+                    time: event.t
+                };
+                teamStats[event.player1_team].push(stats);
+            }
         });
-        return momentum; 
+
+        let MAMBAe = (shotsMade + 0.5 * (steals + blocks + OReb)) / shotsAttempted;
+        return MAMBAe;
+        
     }
 
     let homeTeamQueue = [];
@@ -216,7 +284,7 @@ function MAMBA(gameData, MAdj, multiplier = 1.1) {
         event.totalMAMBA = event.MAMBAs + event.MAMBAe
     });
 
-    // console.log(new_gameData)
+    console.log(new_gameData)
     return new_gameData;
 }
 
