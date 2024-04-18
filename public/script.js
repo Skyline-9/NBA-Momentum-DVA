@@ -1,4 +1,4 @@
-import { getMomentum } from "./calculations.js";
+import {getMomentum} from "./calculations.js";
 
 document.addEventListener('DOMContentLoaded', function () {
     const selectYear = document.getElementById('yearSelect');
@@ -39,13 +39,12 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
-var eventypes = [{ type: 1, label: "Made Shot" }, { type: 2, label: "Missed Shot" }, { type: 3, label: "Free Throw" }, // the score will tell if it was made or not
-{ type: 4, label: "Rebound" }, { type: 5, label: "Turnover" }, {
-    type: 6,
-    label: "Foul"
-}, //{type: 7, label: "Violation"},
-{ type: 8, label: "Substitution" }, { type: 9, label: "Timeout" }, //{type: 10, label: "Jumpball"},
-{ type: 11, label: "Ejection" }, //{type: 12, label: "Period Begin"},
+var eventypes = [{type: 1, label: "Made Shot"}, {type: 2, label: "Missed Shot"}, {type: 3, label: "Free Throw"}, // the score will tell if it was made or not
+    {type: 4, label: "Rebound"}, {type: 5, label: "Turnover"}, {
+        type: 6, label: "Foul"
+    }, //{type: 7, label: "Violation"},
+    {type: 8, label: "Substitution"}, {type: 9, label: "Timeout"}, //{type: 10, label: "Jumpball"},
+    {type: 11, label: "Ejection"}, //{type: 12, label: "Period Begin"},
     //{type: 13, label: "Period End"},
     //{type: 14, lable: "Hello"}
 ]
@@ -145,13 +144,11 @@ function initMomentumSelector() {
     const momentumSelect = document.getElementById('momentumSelect');
     momentumSelect.innerHTML = ''; // Clear previous options
 
-    const momentumTypes = [
-        { value: '', text: '--Select Momentum Type--' }, // default no selection
-        { value: 'ScoreNormalizedMomentum', text: 'Score Normalized Momentum' },
-        { value: 'PAPM', text: 'PAPM' },
-        { value: 'MAMBA', text: 'MAMBA' },
-        { value: 'all momentum', text: 'ALL Momentum'},
-    ];
+    const momentumTypes = [{value: '', text: '--Select Momentum Type--'}, // default no selection
+        {value: 'ScoreNormalizedMomentum', text: 'Score Normalized Time'}, {
+            value: 'PAPM',
+            text: 'PAPM'
+        }, {value: 'MAMBA', text: 'MAMBA'}, {value: 'all momentum', text: 'ALL Momentum'},];
 
     momentumTypes.forEach(type => {
         const option = document.createElement('option');
@@ -167,9 +164,7 @@ function initMomentumSelector() {
 
 function updateMomentumVisualization(selectedMomentumType) {
     const momentumSelectors = {
-        'ScoreNormalizedMomentum': ['#homeMomentum', '#awayMomentum'],
-        'MAMBA': ['#MAMBA'],
-        'PAPM': ['#PAPM']
+        'ScoreNormalizedMomentum': ['#scoreNormalizedMomentum'], 'MAMBA': ['#MAMBA'], 'PAPM': ['#PAPM']
     };
 
     // Hide all momentum visualizations first
@@ -201,7 +196,7 @@ function plotGameData(gid, year) {
     // Ensure your path to the CSV is correct and accessible
 
     d3.csv(`data/nbastats_${year}/nbastats_${year}.csv`).then(async data => {
-        const margin = ({top: 50, right: 30, bottom: 30, left: 150})
+        const margin = ({top: 20, right: 30, bottom: 30, left: 150})
         const height = 750;
         const width = 1250;
 
@@ -213,14 +208,11 @@ function plotGameData(gid, year) {
 
         const game = data.filter(d => d["GAME_ID"] === gid);
         var periods = [{t: 0, label: "Q1"}, {t: 720, label: "Q2"}, {t: 1440, label: "Q3"}, {
-            t: 2160,
-            label: "Q4"
+            t: 2160, label: "Q4"
         }, {t: 2880, label: "OT1"}, {t: 3180, label: "OT2"}, {t: 3480, label: "OT3"}, {t: 3780, label: "OT4"}, {
-            t: 4080,
-            label: "OT5"
+            t: 4080, label: "OT5"
         }, {t: 4380, label: "OT6"}, {t: 4680, label: "OT7"}, {t: 4980, label: "OT8"}, {t: 5280, label: "OT9"}, {
-            t: 5580,
-            label: "OT10"
+            t: 5580, label: "OT10"
         },];
 
 
@@ -344,9 +336,7 @@ function plotGameData(gid, year) {
 
         let lastPlay = game_data[game_data.length - 1]
         game_data.push({
-            period: lastPlay.period,
-            t: getElapsed(lastPlay.period, lastPlay.time_left),
-            score_diff: 0,
+            period: lastPlay.period, t: getElapsed(lastPlay.period, lastPlay.time_left), score_diff: 0,
         })
 
         let gameLength = game_data[game_data.length - 1].t
@@ -402,35 +392,49 @@ function plotGameData(gid, year) {
         let momentum1 = await getMomentum(game_data, year, "ScoreNormalizedMomentum", home_team, away_team)
         momentum1.pop()
 
-        const maxHomeMomentum = d3.max(momentum1, d => Math.abs(d.homeTeamMomentum));
-        const maxAwayMomentum = d3.max(momentum1, d => Math.abs(d.awayTeamMomentum))
-        var maxMomentum1 = Math.max(maxHomeMomentum, maxAwayMomentum)
+        // const maxHomeMomentum = d3.max(momentum1, d => Math.abs(d.homeTeamMomentum));
+        // const maxAwayMomentum = d3.max(momentum1, d => Math.abs(d.awayTeamMomentum))
+        // var maxMomentum1 = Math.max(maxHomeMomentum, maxAwayMomentum)
 
-        const line_home = d3.line()
+        const maxMomentum1 = d3.max(momentum1, d => Math.abs(d.totalScoreNormalizedMomentum));
+        const line_scoreMomentum = d3.line()
             .x(d => x(d.t))
-            .y(d => y((d.homeTeamMomentum / maxMomentum1) * maxScoreDiff))
+            .y(d => y((d.totalScoreNormalizedMomentum / maxMomentum1) * maxScoreDiff));
 
         svg.append("g")
-            .attr("id", "homeMomentum")
+            .attr("id", "scoreNormalizedMomentum")
             .append("path")
             .data([momentum1])
             .attr("fill", "none")
-            .attr("stroke", "blue")
+            .attr("stroke", "rgba(100,41,204,0.8)")
             .attr("stroke-width", 2)
-            .attr("d", line_home);
+            .attr("d", line_scoreMomentum);
 
-        const line_away = d3.line()
-            .x(d => x(d.t))
-            .y(d => y(-(d.awayTeamMomentum / maxMomentum1) * maxScoreDiff))
-
-        svg.append("g")
-            .attr("id", "awayMomentum")
-            .append("path")
-            .data([momentum1])
-            .attr("fill", "none")
-            .attr("stroke", "red")
-            .attr("stroke-width", 2)
-            .attr("d", line_away)
+        // const line_home = d3.line()
+        //     .x(d => x(d.t))
+        //     .y(d => y((d.homeTeamMomentum / maxMomentum1) * maxScoreDiff))
+        //
+        // svg.append("g")
+        //     .attr("id", "homeMomentum")
+        //     .append("path")
+        //     .data([momentum1])
+        //     .attr("fill", "none")
+        //     .attr("stroke", "blue")
+        //     .attr("stroke-width", 2)
+        //     .attr("d", line_home);
+        //
+        // const line_away = d3.line()
+        //     .x(d => x(d.t))
+        //     .y(d => y(-(d.awayTeamMomentum / maxMomentum1) * maxScoreDiff))
+        //
+        // svg.append("g")
+        //     .attr("id", "awayMomentum")
+        //     .append("path")
+        //     .data([momentum1])
+        //     .attr("fill", "none")
+        //     .attr("stroke", "red")
+        //     .attr("stroke-width", 2)
+        //     .attr("d", line_away)
 
 
         let momentum2 = await getMomentum(game_data, year, "MAMBA", home_team, away_team)
@@ -464,7 +468,7 @@ function plotGameData(gid, year) {
             .append("path")
             .data([momentum3])
             .attr("fill", "none")
-            .attr("stroke", "orange")
+            .attr("stroke", "darkorange")
             .attr("stroke-width", 2)
             .attr("d", line_PAPM);
 
@@ -520,6 +524,9 @@ function plotGameData(gid, year) {
             .attr("class", "y-axis")
             .call(yAxis)
 
+        // Title
+        // Edit #plotTitle
+        document.getElementById('plotTitle').textContent = `${home_team} vs ${away_team}`;
 
         // tooltip
         var tooltip = d3.select("body").append("div")
@@ -568,24 +575,20 @@ function plotGameData(gid, year) {
         let toggles = d3.select("#checkbox")
             .selectAll("label.checkbox-label")
             .data(eventypes)
-            .join(
-                enter => enter.append("label")
-                    .attr("class", "checkbox-label")
-                    .text(d => d.label)
-                    .append("input")
-                        .attr("type", "checkbox")
-                        .property("checked", false)
-                        .on("change", function(d) {
-                            checkboxChange(this, game_data, mouseOver, mouseOut, x, y, accent);
-                        }),
-                update => update.call(update => update
-                    .select("input")
-                    .property("checked", false)),
-                exit => exit.remove()
-            );
+            .join(enter => enter.append("label")
+                .attr("class", "checkbox-label")
+                .text(d => d.label)
+                .append("input")
+                .attr("type", "checkbox")
+                .property("checked", false)
+                .on("change", function (d) {
+                    checkboxChange(this, game_data, mouseOver, mouseOut, x, y, accent);
+                }), update => update.call(update => update
+                .select("input")
+                .property("checked", false)), exit => exit.remove());
 
         toggles.select("input")
-            .on("change", function(d) {
+            .on("change", function (d) {
                 checkboxChange(this, game_data, mouseOver, mouseOut, x, y, accent);
             });
 

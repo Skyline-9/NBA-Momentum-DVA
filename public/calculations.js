@@ -109,6 +109,7 @@ function ScoreNormalizedMomentum(gameData, interval = 10, scaling = 60) {
         // add 2 momentum to the object
         event.homeTeamMomentum = homeTeamMomentum;
         event.awayTeamMomentum = awayTeamMomentum
+        event.totalScoreNormalizedMomentum = homeTeamMomentum - awayTeamMomentum;
     });
     // console.log(new_gameData)
     return new_gameData

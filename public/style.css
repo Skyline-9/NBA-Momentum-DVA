@@ -16,7 +16,8 @@ body {
 }
 
 h1, h2, h3, h4 {
-    font-family: 'Old Standard TT', serif;
+    font-family: 'franklin-gothic-atf', serif;
+    text-transform: uppercase;
 }
 
 p {
@@ -26,13 +27,14 @@ p {
 .intro {
     background: #1D428A;
     color: white;          /* Makes text color white */
-    font-family: Helvetica; 
-    font-size: 20px;
+    font-size: 18px;
     /* display: block; */
     /* Center this div */
     width: 100%;
     align-items: center;
     text-align: center;
+    padding-bottom: 2rem;
+    padding-top: 2rem;
 }
 
 .lead-tracker {
@@ -91,7 +93,7 @@ p {
 .card {
     background: white;
     width: 85%;
-    height: 750px;
+    height: 850px;
     margin: auto;
     box-shadow: 0 3px 10px rgba(0,0,0,0.16);
     padding-bottom: 6rem;
@@ -158,4 +160,32 @@ select option {
 
 input[type="checkbox"] {
     vertical-align: middle; /* Aligns the checkbox vertically in the middle of the label */
+}
+
+.legend {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    margin-right: 1rem;
+}
+
+.legend-item .color-square {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border: 1px solid black;
+}
+
+#plotTitle {
+    text-align: center;
+    padding-top: 1rem;
+    margin-bottom: 0;
+    color: #3b3b3b;
 }
