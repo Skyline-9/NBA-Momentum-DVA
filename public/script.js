@@ -584,6 +584,11 @@ function plotGameData(gid, year) {
                 exit => exit.remove()
             );
 
+        toggles.select("input")
+            .on("change", function(d) {
+                checkboxChange(this, game_data, mouseOver, mouseOut, x, y, accent);
+            });
+
         /*
          const toggles = d3.select("#checkbox")
              .selectAll("label")
