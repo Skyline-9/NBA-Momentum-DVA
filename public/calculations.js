@@ -162,7 +162,7 @@ function convertToSeconds(timeStr) {
     return minutes * 60 + seconds; // Calculate total seconds
 }
 
-function MAMBA(gameData, MAdj, multiplier = 1.1, homeTeam, awayTeam) {
+function MAMBA(gameData, paceData, homeTeam, awayTeam, multiplier = 1.1) {
     const leaguePace = paceData["League Average"];
     const homePace = paceData[TEAM_TO_FULL_NAME[homeTeam]];
     const awayPace = paceData[TEAM_TO_FULL_NAME[awayTeam]];
@@ -348,7 +348,7 @@ function MAMBA(gameData, MAdj, multiplier = 1.1, homeTeam, awayTeam) {
 
         // Calculate the MAMBA momentum after each event
         event.MAMBAs = (calculateMAMBAsForTeam(homeTeamQueue, 'home', multiplier) - calculateMAMBAsForTeam(awayTeamQueue, 'away', multiplier));
-        calculateMAMBAeForTeam(new_gameData);
+        // calculateMAMBAeForTeam(new_gameData);
         event.totalMAMBA = event.MAMBAs
     });
 
