@@ -36,14 +36,6 @@ p {
     fill: rgb(190, 95, 95);
 }
 
-.checkbox-label {
-    display: inline-block;
-    width: 110px;
-    margin-right: 5px;
-    margin-left: 10px;
-    font-size: 14px;
-}
-
 .tooltip {
     position: absolute;
     background-color: rgba(0, 0, 0, 0.7);
@@ -82,7 +74,7 @@ p {
 .graph-area {
     background: #f0f0f0;
     width: 100%;
-    height: 850px;
+    height: 1000px;
     display: block;
 
 }
@@ -99,7 +91,7 @@ p {
     height: 750px;
     margin: auto;
     box-shadow: 0 3px 10px rgba(0,0,0,0.16);
-    padding-bottom: 4rem;
+    padding-bottom: 6rem;
     border-radius: 5px;
 }
 
@@ -139,8 +131,25 @@ select option {
     background-color: var(--option-bg);
 }
 
-#plotArea, #checkbox {
+#plotArea{
     width: 100%;
     margin: auto;
     text-align: center;
+}
+
+#checkbox {
+    width: 100%; /* Ensures the container spans the full width of its parent */
+    padding: 10px; /* Adds padding inside the container */
+    box-sizing: border-box; /* Includes padding in the width and height calculations */
+    display: flex; /* Uses flexbox layout for the children */
+    justify-content: space-around; /* Distributes space around each item */
+    align-items: center; /* Aligns items vertically in the center */
+}
+
+.checkbox-label {
+    text-align: center; /* Centers the text inside the labels */
+}
+
+input[type="checkbox"] {
+    vertical-align: middle; /* Aligns the checkbox vertically in the middle of the label */
 }

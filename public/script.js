@@ -565,22 +565,22 @@ function plotGameData(gid, year) {
             .range(d3.schemeCategory10)
 
 
-        let toggles = d3.select("#checkbox").selectAll("input[type='checkbox']")
+        let toggles = d3.select("#checkbox")
+            .selectAll("label.checkbox-label")
             .data(eventypes)
             .join(
-                enter => enter.append("input")
-                    .attr("type", "checkbox")
-                    .property("checked", false)
-                    .on("change", function () {
-                        checkboxChange(this, game_data, mouseOver, mouseOut, x, y, accent);
-                    }),
-
-
-                update => update
-                    .property("checked", false)
-                    .on("change", function () {
-                        checkboxChange(this, game_data, mouseOver, mouseOut, x, y, accent);
-                    }),
+                enter => enter.append("label")
+                    .attr("class", "checkbox-label")
+                    .text(d => d.label)
+                    .append("input")
+                        .attr("type", "checkbox")
+                        .property("checked", false)
+                        .on("change", function(d) {
+                            checkboxChange(this, game_data, mouseOver, mouseOut, x, y, accent);
+                        }),
+                update => update.call(update => update
+                    .select("input")
+                    .property("checked", false)),
                 exit => exit.remove()
             );
 
