@@ -96,6 +96,9 @@ p {
 }
 
 .description {
+    text-align: center;
+    width: 80%;
+    margin: auto;
     margin-top: 5rem;
 }
 
