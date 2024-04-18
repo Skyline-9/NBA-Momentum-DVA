@@ -24,10 +24,13 @@ p {
 }
 
 .intro {
-    display: block;
+    background: #1D428A;
+    color: white;          /* Makes text color white */
+    font-family: Helvetica; 
+    font-size: 20px;
+    /* display: block; */
     /* Center this div */
     width: 100%;
-    margin: auto;
     align-items: center;
     text-align: center;
 }
