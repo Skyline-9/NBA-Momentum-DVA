@@ -408,40 +408,6 @@ function MAMBA(gameData, paceData, homeTeam, awayTeam, multiplier = 1.1, maxInte
         return [homeTeamMambaE, awayTeamMambaE];
     }
 
-    // let homeTeamQueue = [];
-    // let awayTeamQueue = [];
-    // let lastScoringTeam = null;
-    //
-    // let new_gameData = JSON.parse(JSON.stringify(gameData));
-    //
-    // new_gameData.forEach(event => {
-    //     if (!event.score) return;
-    //
-    //     let time_elapsed = convertToSeconds(event.time_left) // in minuts
-    //
-    //     // Parse the current scores from the event
-    //     const homeTeamScore = parseInt(event.score.split('-')[1], 10);
-    //     const awayTeamScore = parseInt(event.score.split('-')[0], 10);
-    //
-    //     // Determine points scored in this event
-    //     let homePoints = homeTeamQueue.length > 0 ? homeTeamScore - homeTeamQueue[homeTeamQueue.length - 1].score : homeTeamScore;
-    //     let awayPoints = awayTeamQueue.length > 0 ? awayTeamScore - awayTeamQueue[awayTeamQueue.length - 1].score : awayTeamScore;
-    //
-    //     // Check if this is a scoring event for the home or away team
-    //     if ((event.etype === 1 || event.etype === 3) && homePoints > 0) {
-    //         homeTeamQueue.push({score: homeTeamScore, points: homePoints, team: 'home', dt: time_elapsed});
-    //         lastScoringTeam = 'home';
-    //     } else if ((event.etype === 1 || event.etype === 3) && awayPoints > 0) {
-    //         awayTeamQueue.push({score: awayTeamScore, points: awayPoints, team: 'away', dt: time_elapsed});
-    //         lastScoringTeam = 'away';
-    //     }
-    //
-    //     // Calculate the MAMBA momentum after each event
-    //     event.MAMBAs = (calculateMAMBAsForTeam(homeTeamQueue, 'home', multiplier) - calculateMAMBAsForTeam(awayTeamQueue, 'away', multiplier));
-    //     calculateMAMBAeForTeam(new_gameData);
-    //     event.totalMAMBA = event.MAMBAs
-    // });
-
     let new_gameData = JSON.parse(JSON.stringify(gameData));
     const mambaS = calculateMAMBAsForTeam(new_gameData, Madj);
 
