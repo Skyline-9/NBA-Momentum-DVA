@@ -79,7 +79,7 @@ p {
 .graph-area {
     background: #f0f0f0;
     width: 100%;
-    height: 1000px;
+    height: 1050px;
     display: block;
 
 }
@@ -93,7 +93,7 @@ p {
 .card {
     background: white;
     width: 85%;
-    height: 850px;
+    height: 890px;
     margin: auto;
     box-shadow: 0 3px 10px rgba(0,0,0,0.16);
     padding-bottom: 6rem;
@@ -173,6 +173,7 @@ input[type="checkbox"] {
     align-items: center;
     margin-bottom: 5px;
     margin-right: 1rem;
+    font-style: italic;
 }
 
 .legend-item .color-square {
@@ -188,4 +189,10 @@ input[type="checkbox"] {
     padding-top: 1rem;
     margin-bottom: 0;
     color: #3b3b3b;
+}
+
+#plotDate {
+    text-align: center;
+    color: #333333;
+    font-style: italic;
 }

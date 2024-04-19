@@ -16,8 +16,21 @@ app.use(express.static('public'));
 
 app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
+app.get('/api/game/:gameID', (req, res) => {
+    // #swagger.description = 'Fetch NBA boxscore data for a given game'
+
+    const gameID = req.params.gameID;
+    axios.get(`https://cdn.nba.com/static/json/liveData/boxscore/boxscore_00${gameID}.json`).then(response => {
+        res.json(response.data);
+    })
+        .catch(error => {
+            console.error(error);
+            res.status(500).send(`Error fetching game data for ${gameID}`);
+        });
+});
+
 app.get("/api/pace/:year", async (req, res) => {
-    // #swagger.description = 'Fetch NBA pace for a given season'
+    // #swagger.description = 'Fetch NBA pace for a given season. Note that year here is the START of the season'
     /* #swagger.responses[200] = {
           description: 'Season pace data for every team and league average.',
     } */

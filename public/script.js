@@ -2,7 +2,7 @@ import {getMomentum} from "./calculations.js";
 
 document.addEventListener('DOMContentLoaded', function () {
     const selectYear = document.getElementById('yearSelect');
-    for (let year = 2000; year <= 2023; year++) {
+    for (let year = 2000; year <= 2024; year++) {
         const option = document.createElement('option');
         option.value = year;
         option.textContent = year;
@@ -27,7 +27,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 document.getElementById('plotSkeleton').style.display = 'block'; // Show skeleton Loader
 
-                const response = await fetch(`/api/nba_season/${selectedYear}`);
+                // IMPORTANT: API is labeled as year of season start (e.g. the 24 season is in 2023)
+                const response = await fetch(`/api/nba_season/${selectedYear - 1}`);
                 const gamesData = await response.json();
                 displayGames(gamesData, selectedYear); // Call to function that handles display
             } catch (error) {
@@ -195,7 +196,7 @@ function plotGameData(gid, year) {
     console.log(year)
     // Ensure your path to the CSV is correct and accessible
 
-    d3.csv(`data/nbastats_${year}/nbastats_${year}.csv`).then(async data => {
+    d3.csv(`data/nbastats_${year - 1}/nbastats_${year - 1}.csv`).then(async data => {
         const margin = ({top: 20, right: 30, bottom: 30, left: 150})
         const height = 750;
         const width = 1250;
@@ -528,6 +529,20 @@ function plotGameData(gid, year) {
         // Edit #plotTitle
         document.getElementById('plotTitle').textContent = `${home_team} vs ${away_team}`;
 
+        // Edit gameDate
+        fetch(`/api/game/${gid}`).then(response => {
+            response.json().then(data => {
+                console.log("Fetched boxscore");
+                console.log(data);
+
+                const gameDate = data.game.gameTimeUTC;
+                const date = new Date(gameDate);
+
+                const arenaCity = data.game.arena.arenaCity;
+                document.getElementById('plotDate').textContent = `${date.toDateString()} @ ${arenaCity}`;
+            })
+        })
+
         // tooltip
         var tooltip = d3.select("body").append("div")
             .attr("class", "tooltip")
@@ -550,7 +565,7 @@ function plotGameData(gid, year) {
                 .style("opacity", .9)
             tooltip.html(data_circ.description)
                 .style("left", (x_ + 95) + "px")
-                .style("top", (y_ + 175) + "px")
+                .style("top", (y_ + 300) + "px")
                 .style("display", "block");
         }
 
