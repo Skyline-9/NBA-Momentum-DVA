@@ -11,9 +11,30 @@
     "http"
   ],
   "paths": {
+    "/api/game/{gameID}": {
+      "get": {
+        "description": "Fetch NBA boxscore data for a given game",
+        "parameters": [
+          {
+            "name": "gameID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
     "/api/pace/{year}": {
       "get": {
-        "description": "Fetch NBA pace for a given season",
+        "description": "Fetch NBA pace for a given season. Note that year here is the END of the season",
         "parameters": [
           {
             "name": "year",
@@ -34,7 +55,7 @@
     },
     "/api/nba_season/{year}": {
       "get": {
-        "description": "Fetch NBA data for a given year",
+        "description": "Fetch NBA data for a given year. Note that year here is the START of the season",
         "parameters": [
           {
             "name": "year",

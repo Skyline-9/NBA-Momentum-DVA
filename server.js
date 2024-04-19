@@ -30,7 +30,7 @@ app.get('/api/game/:gameID', (req, res) => {
 });
 
 app.get("/api/pace/:year", async (req, res) => {
-    // #swagger.description = 'Fetch NBA pace for a given season. Note that year here is the START of the season'
+    // #swagger.description = 'Fetch NBA pace for a given season. Note that year here is the END of the season'
     /* #swagger.responses[200] = {
           description: 'Season pace data for every team and league average.',
     } */
@@ -77,7 +77,7 @@ app.get("/api/pace/:year", async (req, res) => {
 })
 
 app.get('/api/nba_season/:year', async (req, res) => {
-    // #swagger.description = 'Fetch NBA data for a given year'
+    // #swagger.description = 'Fetch NBA data for a given year. Note that year here is the START of the season'
     /* #swagger.responses[200] = {
           description: 'List of games in NBA season.',
     } */
