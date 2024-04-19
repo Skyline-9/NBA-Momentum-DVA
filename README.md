@@ -1,11 +1,12 @@
 # NBA Momentum Visualizer
 
-## Prerequisites
+## Installation
+### Prerequisites
 - Node
 - Web Browser
 - _(Optional)_ [pnpm](https://pnpm.io/installation)
 
-## Setup
+### Setup
 
 1. Navigate to current directory in terminal
 ```zsh
@@ -24,7 +25,7 @@ npm install
 pnpm install
 ```
 
-## Usage
+## Execution
 
 Start the server by running the following command in the same directory as installation.
 
