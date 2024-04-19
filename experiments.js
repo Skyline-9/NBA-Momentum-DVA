@@ -131,7 +131,6 @@ function PAPM(gameData, paceData, homeTeam, awayTeam, windowSize = 180) {
     const awayPace = paceData[TEAM_TO_FULL_NAME[awayTeam]];
 
     const Madj = leaguePace / (0.5 * homePace + 0.5 * awayPace);
-
     new_gameData.forEach((event, index) => {
         if (!event.score) return;
 
@@ -480,6 +479,7 @@ async function getMomentum(gameData, year, method, homeTeam, awayTeam) {
     paceData = 1.0
 
     homeTeam = homeTeam.toLowerCase();
+    console.log(awayTeam)
     awayTeam = awayTeam.toLowerCase();
 
     // Grizzlies move from Vancouver to Memphis
@@ -659,7 +659,7 @@ async function getFormattedNBAData(seasons, data, seasontype = 'rg') {
 }
 
 
-async function analyzeMomentum(gameData, year, method, homeTeam, awayTeam) {
+async function analyzeMomentum(gameData, year, method, end_period,  homeTeam, awayTeam) {
     // Validate method input and default to ScoreNormalizedMomentum if none specified
     const validMethods = ["PAPM", "MAMBA", "ScoreNormalizedMomentum"];
     if (!validMethods.includes(method)) {
@@ -667,14 +667,59 @@ async function analyzeMomentum(gameData, year, method, homeTeam, awayTeam) {
         method = "ScoreNormalizedMomentum";
     }
 
-    
+    // let momentum1 = await getMomentum(game_data, year, "ScoreNormalizedMomentum", home_team, away_team)
+    // momentum1.pop()
 
-    let ScoreNormalizedMomentum = getMomentum(gameData, year, 'ScoreNormalizedMomentum', homeTeam, awayTeam);
-    console.log(ScoreNormalizedMomentum)
-    // Depending on the method, we call different functions to calculate momentum
-    return momentum 
+    let momentum = await getMomentum(gameData, year, method, homeTeam, awayTeam);
+    momentum.pop();  // Correct the pop method invocation with parentheses
+
+    let homeMomentum = 0;
+    let awayMomentum = 0;
+    let lastEventPeriod3 = null;
+
+    // Iterate through the momentum data to find the last event of period 3
+    for (let event of momentum) {
+        if (event.period === end_period) {
+            homeMomentum = event.homeTeamMomentum;
+            awayMomentum = event.awayTeamMomentum;
+            lastEventPeriod3 = event;  // Keep updating to get the last event in period 3
+        }
+    }
+    const lastEvent = momentum[momentum.length - 1];
+    const homeTeamScore = parseInt(lastEvent.score.split('-')[1], 10);
+    const awayTeamScore = parseInt(lastEvent.score.split('-')[0], 10);
+
+    // Determine the winning team
+    let winningTeam = "";
+    if (homeTeamScore > awayTeamScore) {
+        winningTeam = "home";
+    } else if (awayTeamScore > homeTeamScore) {
+        winningTeam = "away";
+    }
+
+    // Log final scores and momentum
+    console.log(`Final event score - Home: ${homeTeamScore}, Away: ${awayTeamScore}`);
+    if (winningTeam === "home") {
+        console.log("Home team won.");
+    } else if (winningTeam === "away") {
+        console.log("Away team won.");
+    } else {
+        console.log("The last event ended in a tie based on the scores.");
+    }
+
+    if (lastEventPeriod3) {
+        console.log(`Momentum just before period  ${end_period} - Home: ${homeMomentum}, Away: ${awayMomentum}`);
+        if (homeMomentum > awayMomentum && winningTeam === "home" || awayMomentum > homeMomentum && winningTeam === "away") {
+            console.log(`The team with higher momentum at the end of Period ${end_period} won the game.`);
+            return 1;  // Return 1 if the team with higher momentum won
+        } else {
+            console.log(`The team with higher momentum at the end of Period ${end_period} did not win the game.`);
+        }
+    } else {
+        console.log("No events recorded for Period 3.");
+    }
+    return 0;  // Return 0 if the conditions are not met
 }
-
 
 async function logSeasonData() {
 
@@ -693,48 +738,52 @@ async function logSeasonData() {
     }
 
     try {
-        const year = 2022
-        const seasonData = await getFormattedNBAData([2022], 'nbastats', 'rg');
-        idx = 0
-        home_team = seasonData[idx]["teams"][0]
-        away_team = seasonData[idx]["teams"][1]
-        
-        console.log(home_team)
-        console.log(away_team)
-        
-        const gameData = seasonData[idx]["events"]
+        const year = 2000
+        const seasonData = await getFormattedNBAData([2000], 'nbastats', 'rg');
 
         
-
-        if (gameData.length > 0) {
-            gameData[0].score_diff = "0";
-            gameData[0].score = "0 - 0";
-        }
+        let sum = 0
         
-        for (let i = 1; i < gameData.length; i++) {
-            if (gameData[i].score_diff === "") {
-                gameData[i].score_diff = gameData[i - 1].score_diff;
+        for (let i = 1; i < seasonData.length; i++) {
+            home_team = seasonData[i]["teams"][0]
+            away_team = seasonData[i]["teams"][1]
+        
+            const gameData = seasonData[i]["events"]
+
+            
+
+            if (gameData.length > 0) {
+                gameData[0].score_diff = "0";
+                gameData[0].score = "0 - 0";
             }
-        
-            if (gameData[i].score === "") {
-                gameData[i].score = gameData[i - 1].score;
-            }
-        
-            // Convert score_diff to number
-            gameData[i].score_diff = +gameData[i].score_diff;
+            
+            for (let i = 1; i < gameData.length; i++) {
+                if (gameData[i].score_diff === "") {
+                    gameData[i].score_diff = gameData[i - 1].score_diff;
+                }
+            
+                if (gameData[i].score === "") {
+                    gameData[i].score = gameData[i - 1].score;
+                }
+            
+                // Convert score_diff to number
+                gameData[i].score_diff = +gameData[i].score_diff;
 
-            gameData[i].t = getElapsed(gameData[i].period, gameData[i].time_left);
+                gameData[i].t = getElapsed(gameData[i].period, gameData[i].time_left);
+            }
+
+            gameData.forEach( event => {
+                event.t = getElapsed(event.period, event.time_left);
+            });
+
+
+            sum +=  await analyzeMomentum(gameData, year, "ScoreNormalizedMomentum", 3, home_team, away_team)
+            console.log(sum)
+            // const SNM_result1 = analyzeMomentum(gameData, year, "ScoreNormalizedMomentum", 1, home_team, away_team)
         }
 
-        gameData.forEach( event => {
-            event.t = getElapsed(event.period, event.time_left);
-        });
-
-
-
-        // Compute the total length of the game
-
-        const x = analyzeMomentum(gameData, year, "ScoreNormalizedMomentum", home_team, away_team)
+        let percentage = sum / seasonData.length
+        console.log(percentage)
     } catch (error) {
         console.error('Error fetching data:', error);
     }
