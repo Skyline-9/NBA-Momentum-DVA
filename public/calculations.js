@@ -26,6 +26,7 @@ const TEAM_TO_FULL_NAME = {
     "jerseys": "New Jersey Nets",
     "hornets": "Charlotte Hornets",
     "bobcats": "Charlotte Bobcats",
+    "neworleans": "New Orleans Hornets",
     "bulls": "Chicago Bulls",
     "cavaliers": "Cleveland Cavaliers",
     "pistons": "Detroit Pistons",
@@ -528,8 +529,15 @@ async function getMomentum(gameData, year, method, homeTeam, awayTeam) {
         if (awayTeam === "nets") awayTeam = "jerseys";
     }
 
-    // Bobcats change name to Hornets
-    if (year < 2014) {
+    // Hornets move to New Orleans
+    if(year == 2003 || year == 2004) {
+        if (homeTeam === "hornets") homeTeam = "neworleans";
+        if (awayTeam === "hornets") awayTeam = "neworleans";
+
+    }
+
+    // Hornets become bobcats
+    if (2005 <= year < 2014) {
         if (homeTeam === "hornets") homeTeam = "bobcats";
         if (awayTeam === "hornets") awayTeam = "bobcats";
     }
