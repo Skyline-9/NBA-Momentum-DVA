@@ -1,7 +1,7 @@
 # NBA Momentum Visualizer
 
 ## Description
-This package offers a powerful solution for extracting NBA game data from stats.nba.com and fetching pace data from basketball-reference.com. With a focus on data visualization, it provides capabilities to create insightful visualizations for each game. The included `calculation.js` module features three distinct calculations for momentum analysis: ScoreNormalizedTime, PAPM, and MAMBA. Utilizing the d3.js library, the `script.js` file enables the creation of dynamic and interactive game and momentum visualizations, enhancing understanding and analysis of NBA game dynamics, and "experiments.js" calculates each momentum value for NBA games given the year(s) of the season start to see how predictive each metric is of which team wins.
+This package offers a powerful solution for extracting NBA game data from stats.nba.com and fetching pace data from basketball-reference.com. With a focus on data visualization, it provides capabilities to create insightful visualizations for each game. The included `calculation.js` module features three distinct calculations for momentum analysis: ScoreNormalizedTime, PAPM, and MAMBA. Utilizing the d3.js library, the `script.js` file enables the creation of dynamic and interactive game and momentum visualizations, enhancing understanding and analysis of NBA game dynamics, and `experiments.js` calculates each momentum value for NBA games given the year(s) of the season start to see how predictive each metric is of which team wins.
 
 ## Installation
 ### Prerequisites
